@@ -1,0 +1,26 @@
+import React from 'react';
+
+interface ContainerProps {
+  children: React.ReactNode;
+  fluid?: boolean;
+  className?: string;
+}
+
+const Container: React.FC<ContainerProps> = ({
+  children,
+  fluid = false,
+  className = '',
+}) => {
+  return (
+    <div
+      className={`
+        ${fluid ? 'w-full' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'}
+        ${className}
+      `}
+    >
+      {children}
+    </div>
+  );
+};
+
+export default Container;
