@@ -1,8 +1,8 @@
-# Otaku Hub Design Foundation Summary
+# OtakuSaga Design Foundation Summary
 
 ## Overview
 
-This document summarizes the design foundation implemented for the Otaku Hub premium anime e-commerce website. The foundation establishes the visual design system, typography, folder structure, and reusable layout components.
+This document summarizes the design foundation implemented for the OtakuSaga premium anime e-commerce website. The foundation establishes the visual design system, typography, folder structure, and reusable layout components.
 
 ## 🎨 Design System Configuration
 
@@ -58,7 +58,7 @@ src/
 #### Navbar.tsx
 
 - **Features**:
-  - Logo placeholder: "Otaku Hub"
+  - Logo placeholder: "OtakuSaga"
   - Navigation links: Home, Shop, Collections, New Arrivals, About
   - Icons: Search, Wishlist (placeholder), Cart (with item count badge), Login
   - Sticky positioning (`sticky top-0`) with backdrop blur effect
@@ -173,4 +173,4 @@ src/styles/         # (empty - ready for styles)
 
 ---
 
-_Foundation complete. Ready to build homepage and UI components following the Otaku Hub PRD specifications._
+_Foundation complete. Ready to build homepage and UI components following the OtakuSaga PRD specifications._

@@ -1,180 +1,136 @@
-import React from 'react';
+'use client';
 
-const Footer: React.FC = () => {
+import React from 'react';
+import Link from 'next/link';
+import { cn } from '@/utils/cn';
+import { siteConfig } from '@/config/site';
+import { useNewsletterSubscription } from '@/hooks/useNewsletterSubscription';
+
+export const Footer: React.FC = () => {
+  const { email, setEmail, submitting, subscribed, handleSubscribe } =
+    useNewsletterSubscription('footer');
+
+  const linkClasses = cn(
+    'hover:text-primary transition-colors',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface rounded-sm'
+  );
+
   return (
-    <footer className="mt-20">
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="pt-16 pb-12 sm:grid sm:grid-cols-4 sm:gap-8">
-          {/* Brand */}
-          <div className="mb-6">
-            <h3 className="mb-4 font-medium text-primary-text">Otaku Hub</h3>
-            <p className="text-sm text-secondary-text">
-              Premium anime-inspired fashion and collectibles.
+    <footer className="bg-surface border-t border-border mt-auto relative z-10 text-secondary-text">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+          {/* Brand Column */}
+          <div className="space-y-4">
+            <Link href="/" className="inline-block">
+              <span className="font-display font-bold text-2xl tracking-tighter text-accent">
+                OTAKU<span className="text-white">SAGA</span>
+              </span>
+            </Link>
+            <p className="text-sm leading-relaxed text-secondary-text max-w-sm">
+              Premium anime apparel, streetwear, and collector merchandise.
+              Engineered for true fans.
             </p>
           </div>
-          {/* Shop */}
+
+          {/* Shop Column */}
           <div>
-            <h4 className="mb-4 font-medium text-primary-text">Shop</h4>
-            <nav className="space-y-2">
-              <a
-                href="#"
-                className="text-sm text-secondary-text hover:text-primary-text transition-colors"
-              >
-                Hoodies
-              </a>
-              <a
-                href="#"
-                className="text-sm text-secondary-text hover:text-primary-text transition-colors"
-              >
-                Oversized T-Shirts
-              </a>
-              <a
-                href="#"
-                className="text-sm text-secondary-text hover:text-primary-text transition-colors"
-              >
-                Umbrellas
-              </a>
-              <a
-                href="#"
-                className="text-sm text-secondary-text hover:text-primary-text transition-colors"
-              >
-                Action Figures
-              </a>
-              <a
-                href="#"
-                className="text-sm text-secondary-text hover:text-primary-text transition-colors"
-              >
-                Accessories
-              </a>
-            </nav>
+            <h3 className="text-sm font-semibold text-primary tracking-wider uppercase mb-4">
+              Shop Collections
+            </h3>
+            <ul className="space-y-2.5 text-sm">
+              {siteConfig.footerLinks.shop.map(item => (
+                <li key={item.label}>
+                  <Link href={item.href} className={linkClasses}>
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
-          {/* Support */}
+
+          {/* Support Column */}
           <div>
-            <h4 className="mb-4 font-medium text-primary-text">Support</h4>
-            <nav className="space-y-2">
-              <a
-                href="#"
-                className="text-sm text-secondary-text hover:text-primary-text transition-colors"
-              >
-                FAQ
-              </a>
-              <a
-                href="#"
-                className="text-sm text-secondary-text hover:text-primary-text transition-colors"
-              >
-                Contact Us
-              </a>
-              <a
-                href="#"
-                className="text-sm text-secondary-text hover:text-primary-text transition-colors"
-              >
-                Shipping & Returns
-              </a>
-              <a
-                href="#"
-                className="text-sm text-secondary-text hover:text-primary-text transition-colors"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="#"
-                className="text-sm text-secondary-text hover:text-primary-text transition-colors"
-              >
-                Terms of Service
-              </a>
-            </nav>
+            <h3 className="text-sm font-semibold text-primary tracking-wider uppercase mb-4">
+              Help &amp; Account
+            </h3>
+            <ul className="space-y-2.5 text-sm">
+              {siteConfig.footerLinks.support.map(item => (
+                <li key={item.label}>
+                  <Link href={item.href} className={linkClasses}>
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
-          {/* Social */}
+
+          {/* Newsletter Column */}
           <div>
-            <h4 className="mb-4 font-medium text-primary-text">Follow Us</h4>
-            <div className="flex space-x-4">
-              <a
-                href="#"
-                className="flex items-center justify-center w-10 h-10 rounded border border-border/50 hover:border-accent hover:text-accent"
-                aria-label="Instagram"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5"
+            <h3 className="text-sm font-semibold text-primary tracking-wider uppercase mb-4">
+              Stay in the Loop
+            </h3>
+            <p className="text-sm text-secondary-text mb-4">
+              Subscribe for exclusive drops, early collection access, and
+              special offers.
+            </p>
+            <form onSubmit={handleSubscribe} className="space-y-2">
+              <label htmlFor="newsletter-email" className="sr-only">
+                Email address for newsletter
+              </label>
+              <div className="flex">
+                <input
+                  id="newsletter-email"
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  autoComplete="email"
+                  disabled={subscribed}
+                  className={cn(
+                    'w-full bg-background border border-border rounded-l-md px-3 py-2 text-sm',
+                    'text-primary placeholder-muted',
+                    'focus:outline-none focus:border-accent',
+                    'focus-visible:ring-2 focus-visible:ring-accent',
+                    'disabled:opacity-60'
+                  )}
+                />
+                <button
+                  type="submit"
+                  disabled={submitting || subscribed}
+                  className={cn(
+                    'bg-accent hover:bg-accent/90 text-white font-medium text-sm px-4 py-2',
+                    'rounded-r-md transition-colors duration-200',
+                    'active:scale-[0.98]',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                    'focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+                    'disabled:opacity-60 disabled:cursor-not-allowed'
+                  )}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 10-7.07 0z"
-                  />
-                </svg>
-              </a>
-              <a
-                href="#"
-                className="flex items-center justify-center w-10 h-10 rounded border border-border/50 hover:border-accent hover:text-accent"
-                aria-label="Twitter"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M22 4.01c-1.049.171-2.162.277-3.28.31a10.089 10.089 0 01-2.93-.788c-.818 1.275-2.066 2.23-3.4 2.503a10.092 10.092 0 01-6.092-2.26c-1.25-.222-2.351-.44-3.257-.576A10.096 10.096 0 013 4.192c0 1.57.515 3.028 1.433 4.162a15.09 15.09 0 00.613 3.037M7.5 13.878a3 3 0 100-4.242A3 3 0 007.5 13.878z"
-                  />
-                </svg>
-              </a>
-              <a
-                href="#"
-                className="flex items-center justify-center w-10 h-10 rounded border border-border/50 hover:border-accent hover:text-accent"
-                aria-label="YouTube"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M11 5.657V18.342a2 2 0 00.586 1.44l8.293-4.828a2 2 0 000-2.88l-8.293-4.828z"
-                  />
-                </svg>
-              </a>
-              <a
-                href="#"
-                className="flex items-center justify-center w-10 h-10 rounded border border-border/50 hover:border-accent hover:text-accent"
-                aria-label="TikTok"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M7 8.253V7.5a2.25 2.25 0 012.25-2.25h1.5a.75.75 0 010 1.5H8.25a2.25 2.25 0 00-2.25 2.25v1.358c0 .59-.236 1.155-.624 1.486a12.094 12.094 0 01-2.218-.173 12.09 12.09 0 00-2.218-.173A11.25 11.25 0 003.75 15.75v2.25a2.25 2.25 0 002.25 2.25h1.5"
-                  />
-                </svg>
-              </a>
-            </div>
+                  {subscribed ? '✓' : submitting ? '…' : 'Join'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-        <div className="mt-16 pt-10 border-t border-border/50">
-          <p className="text-center text-sm text-secondary-text">
-            Copyright © 2026 Otaku Hub. All rights reserved.
+
+        {/* Bottom Bar */}
+        <div className="mt-12 pt-8 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+          <p>
+            © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
           </p>
+          <div className="flex space-x-6">
+            {siteConfig.footerLinks.social.map(social => (
+              <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClasses}
+              >
+                {social.label}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </footer>

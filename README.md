@@ -1,12 +1,12 @@
-# Otaku Hub
+# OtakuSaga
 
 A premium anime-inspired e-commerce platform built with Next.js 15, TypeScript, and Tailwind CSS.
 
 ## Overview
 
-Otaku Hub is a premium Shopify-inspired e-commerce platform focused on anime-inspired fashion and collectibles. Built with a focus on performance, beautiful animations, and a luxury shopping experience.
+OtakuSaga is a premium Shopify-inspired e-commerce platform focused on anime-inspired fashion and collectibles. Built with a focus on performance, beautiful animations, and a luxury shopping experience.
 
-This implementation follows the [Otaku Hub PRD](OTAKU_HUB_PRD_v1.0.docx) specifications, featuring:
+This implementation follows the [OtakuSaga PRD](OTAKUSAGA_PRD_v1.0.docx) specifications, featuring:
 
 - Custom Shopify theme with GSAP animations
 - Luxury anime/minimal/cinematic design
@@ -27,7 +27,7 @@ This implementation follows the [Otaku Hub PRD](OTAKU_HUB_PRD_v1.0.docx) specifi
 ## Project Structure
 
 ```
-otaku-hub/
+otakusaga/
 ├── app/                 # Next.js App Router pages and layouts
 ├── components/          # Reusable UI components
 ├── lib/                 # Utility functions and helpers

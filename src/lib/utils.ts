@@ -5,9 +5,11 @@ export function formatPrice(amount: number): string {
   }).format(amount);
 }
 
-export function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) {
-    return text;
-  }
-  return text.substring(0, maxLength) + '...';
+/** Format an ISO date string as "July 18, 2026". */
+export function formatDate(iso: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(iso));
 }

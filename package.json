@@ -1,27 +1,36 @@
 {
-  "name": "otaku-hub",
+  "name": "otakusaga",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint src app",
-    "lint:fix": "eslint src app --fix",
+    "lint": "eslint src app e2e playwright.config.ts",
+    "lint:fix": "eslint src app e2e playwright.config.ts --fix",
+    "type-check": "tsc --noEmit",
+    "test:e2e": "playwright test",
     "format": "prettier --write .",
     "prepare": "husky install"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
+    "@sentry/browser": "^10.69.0",
+    "clsx": "^2.1.1",
     "framer-motion": "^12.42.2",
     "gsap": "^3.15.0",
     "lenis": "^1.3.25",
     "lucide-react": "^1.24.0",
     "next": "15.0.0",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.6.0",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "20.19.43",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.19",
@@ -34,7 +43,12 @@
     "postcss": "^8.4.38",
     "prettier": "^3.3.2",
     "tailwindcss": "3.4.4",
-    "typescript": "^5"
+    "typescript": "5.9.3"
   },
-  "lint-staged": "{'*.{js,jsx,ts,tsx}': ['eslint --fix', 'prettier --write']}"
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  }
 }
