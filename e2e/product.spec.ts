@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const TEST_PRODUCT = 'shadow-realm-hoodie';
+const TEST_PRODUCT = 'gear-5-anime-hoodie-white-premium-unisex-hoodie-1';
 
 test.describe('Product page', () => {
   test('loads and shows product details', async ({ page }) => {
@@ -42,5 +42,26 @@ test.describe('Product page', () => {
       hasText: /reviews/i,
     });
     await expect(reviewSection.first()).toBeVisible();
+  });
+
+  test('mobile sticky purchase stays available after the main actions leave view', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/product/${TEST_PRODUCT}`);
+
+    const mainAddButton = page
+      .getByRole('button', { name: /^Add .+ to cart$/ })
+      .first();
+    await expect(mainAddButton).toBeVisible();
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+
+    const stickyRegion = page.getByRole('region', {
+      name: 'Sticky purchase options',
+    });
+    await expect(stickyRegion).toBeVisible();
+    await expect(
+      stickyRegion.getByRole('button', { name: /^Add .+ to cart$/ })
+    ).toBeVisible();
   });
 });

@@ -3,9 +3,20 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { Globe, MessageCircle, Video, X as XIcon } from 'lucide-react';
+import {
+  Globe,
+  Heart,
+  LogOut,
+  MapPin,
+  MessageCircle,
+  Package,
+  Settings,
+  User,
+  Video,
+  X as XIcon,
+} from 'lucide-react';
 import { ROUTES } from '@/constants';
-import { useUIStore } from '@/store';
+import { useAuthStore, useUIStore } from '@/store';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/utils/cn';
 
@@ -37,6 +48,8 @@ const socialLinks = [
 export function MobileMenu({ className }: MobileMenuProps) {
   const isOpen = useUIStore(s => s.isMobileMenuOpen);
   const setOpen = useUIStore(s => s.setMobileMenuOpen);
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated);
+  const logout = useAuthStore(s => s.logout);
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
@@ -154,6 +167,15 @@ export function MobileMenu({ className }: MobileMenuProps) {
     }),
   };
 
+  const accountLinks = isAuthenticated
+    ? [
+        { label: 'My Profile', href: ROUTES.account.profile, icon: User },
+        { label: 'Orders', href: ROUTES.account.orders, icon: Package },
+        { label: 'Addresses', href: ROUTES.account.addresses, icon: MapPin },
+        { label: 'Settings', href: ROUTES.account.settings, icon: Settings },
+      ]
+    : [{ label: 'Sign in', href: '/auth/login', icon: User }];
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -246,6 +268,73 @@ export function MobileMenu({ className }: MobileMenuProps) {
                   );
                 })}
               </ul>
+
+              {/* Lower-priority header actions remain available here on
+                  mobile, keeping the compact header focused on search and
+                  cart access. */}
+              <div className="mt-10 border-t border-border/60 pt-6">
+                <p className="px-4 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Account
+                </p>
+                <ul className="mt-3 space-y-1">
+                  <li>
+                    <Link
+                      href="/wishlist"
+                      onClick={closeMenu}
+                      aria-current={isActive('/wishlist') ? 'page' : undefined}
+                      className={cn(
+                        'flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-colors',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                        isActive('/wishlist')
+                          ? 'bg-accent/10 text-white'
+                          : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                      )}
+                    >
+                      <Heart className="h-4 w-4" aria-hidden="true" />
+                      Wishlist
+                    </Link>
+                  </li>
+                  {accountLinks.map(accountLink => (
+                    <li key={accountLink.href}>
+                      <Link
+                        href={accountLink.href}
+                        onClick={closeMenu}
+                        aria-current={
+                          isActive(accountLink.href) ? 'page' : undefined
+                        }
+                        className={cn(
+                          'flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-colors',
+                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                          isActive(accountLink.href)
+                            ? 'bg-accent/10 text-white'
+                            : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                        )}
+                      >
+                        <accountLink.icon
+                          className="h-4 w-4"
+                          aria-hidden="true"
+                        />
+                        {accountLink.label}
+                      </Link>
+                    </li>
+                  ))}
+                  {isAuthenticated && (
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void logout();
+                          closeMenu();
+                        }}
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-base font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      >
+                        <LogOut className="h-4 w-4" aria-hidden="true" />
+                        Sign out
+                      </button>
+                    </li>
+                  )}
+                </ul>
+              </div>
             </nav>
 
             {/* ── Footer ──────────────────────────────────── */}

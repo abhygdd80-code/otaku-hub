@@ -11,66 +11,11 @@ import type {
   UserProfile,
 } from '@/types/auth';
 
-// ─── Helpers ───────────────────────────────────────────────────
-
 const STORAGE_KEY = 'otaku-auth';
-const USERS_KEY = 'otaku-users';
-
-function generateId(): string {
-  return `usr_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-}
-
-/**
- * Read registered demo accounts from localStorage.
- *
- * No password is ever persisted: this is a client-side mock auth layer with
- * no backend, so credentials are validated only on the signup form and then
- * discarded. Legacy records that predate this fix may still carry a `password`
- * field — strip it on read and rewrite the key so the plaintext is removed.
- */
-function getStoredUsers(): Record<string, UserProfile> {
-  try {
-    const raw = localStorage.getItem(USERS_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as Record<
-      string,
-      Partial<UserProfile> & { password?: string }
-    >;
-    if (!parsed || typeof parsed !== 'object') return {};
-
-    const clean: Record<string, UserProfile> = {};
-    let sanitized = false;
-
-    for (const [email, record] of Object.entries(parsed)) {
-      if (!record || typeof record !== 'object') continue;
-      const { password, ...profile } = record;
-      if (password !== undefined) sanitized = true;
-      clean[email] = profile as UserProfile;
-    }
-
-    if (sanitized) {
-      try {
-        localStorage.setItem(USERS_KEY, JSON.stringify(clean));
-      } catch {
-        // Non-critical — the in-memory copy is already clean.
-      }
-    }
-
-    return clean;
-  } catch {
-    return {};
-  }
-}
-
-function storeUser(data: UserProfile): void {
-  const users = getStoredUsers();
-  users[data.email] = data;
-  try {
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  } catch (error) {
-    console.warn('Failed to persist account:', error);
-  }
-}
+export const AUTH_UNAVAILABLE_MESSAGE =
+  'Account access is unavailable until the real account integration is enabled.';
+const SESSION_VERIFICATION_MESSAGE =
+  'We could not verify your account session. Please sign in again.';
 
 // ─── API helpers (Shopify-configured path) ─────────────────────
 
@@ -105,29 +50,44 @@ export const useAuthStore = create<AuthStore>()(
       ...initialState,
 
       initSession: async () => {
-        // Nothing to reconcile when Shopify auth is unavailable — the mock
-        // session is trusted as-is.
-        if (!isShopifyConfigured()) return;
+        // Local catalog mode has no secure account backend. Never trust a
+        // persisted mock session, even if it was created by an older build.
+        if (!isShopifyConfigured()) {
+          try {
+            localStorage.removeItem('otaku-users');
+          } catch {
+            // Storage may be unavailable; the in-memory session is still
+            // cleared below.
+          }
+          set({ user: null, isAuthenticated: false, error: null });
+          return;
+        }
 
         try {
           const res = await fetch('/api/auth/me', {
             credentials: 'same-origin',
           });
-          if (res.status === 401) {
-            // Cookie is gone (expired / logged out elsewhere) — reconcile
-            // the persisted store so UI guards reflect reality.
-            if (get().isAuthenticated) {
-              set({ user: null, isAuthenticated: false, error: null });
-            }
+          if (!res.ok) {
+            set({
+              user: null,
+              isAuthenticated: false,
+              error: res.status === 401 ? null : SESSION_VERIFICATION_MESSAGE,
+            });
             return;
           }
           const json = (await res.json()) as { user: UserProfile | null };
           if (json.user) {
             set({ user: json.user, isAuthenticated: true, error: null });
+          } else {
+            set({ user: null, isAuthenticated: false, error: null });
           }
         } catch {
-          // Network failure — leave the persisted session untouched rather
-          // than logging the user out on a transient error.
+          // A persisted client record is not proof of a live server session.
+          set({
+            user: null,
+            isAuthenticated: false,
+            error: SESSION_VERIFICATION_MESSAGE,
+          });
         }
       },
 
@@ -157,88 +117,59 @@ export const useAuthStore = create<AuthStore>()(
           return;
         }
 
-        // Mock auth: passwords are never stored client-side, so sign-in
-        // succeeds for any known demo account. Wire to a real backend
-        // (hashed credentials over HTTPS) before production launch.
-        await new Promise(r => setTimeout(r, 800));
-
-        const users = getStoredUsers();
-        const user = users[credentials.email];
-
-        if (!user) {
-          set({ isLoading: false, error: 'Invalid email or password.' });
-          return;
-        }
-
-        set({ user, isAuthenticated: true, isLoading: false, error: null });
+        // There is no safe local password verifier. Do not authenticate from
+        // the profile-only records used by the old mock implementation.
+        set({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: AUTH_UNAVAILABLE_MESSAGE,
+        });
       },
 
       signup: async (credentials: SignupCredentials) => {
         set({ isLoading: true, error: null });
+
+        if (!isShopifyConfigured()) {
+          // Account creation also requires a real backend to store and verify
+          // credentials. Never create a local account that cannot be secured.
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: AUTH_UNAVAILABLE_MESSAGE,
+          });
+          return;
+        }
 
         if (credentials.password !== credentials.confirmPassword) {
           set({ isLoading: false, error: 'Passwords do not match.' });
           return;
         }
 
-        if (isShopifyConfigured()) {
-          try {
-            const json = await postAuth<{ user?: UserProfile; error?: string }>(
-              '/api/auth/signup',
-              {
-                name: credentials.name,
-                email: credentials.email,
-                password: credentials.password,
-              }
-            );
-            if (json.user) {
-              set({ user: json.user, isAuthenticated: true, isLoading: false });
-              return;
+        try {
+          const json = await postAuth<{ user?: UserProfile; error?: string }>(
+            '/api/auth/signup',
+            {
+              name: credentials.name,
+              email: credentials.email,
+              password: credentials.password,
             }
-            set({
-              isLoading: false,
-              error: json.error ?? 'Unable to create your account.',
-            });
-          } catch {
-            set({
-              isLoading: false,
-              error: 'Something went wrong. Please try again later.',
-            });
+          );
+          if (json.user) {
+            set({ user: json.user, isAuthenticated: true, isLoading: false });
+            return;
           }
-          return;
-        }
-
-        // Mock auth path (existing behavior).
-        await new Promise(r => setTimeout(r, 800));
-
-        if (credentials.password.length < 8) {
           set({
             isLoading: false,
-            error: 'Password must be at least 8 characters.',
+            error: json.error ?? 'Unable to create your account.',
           });
-          return;
-        }
-
-        const users = getStoredUsers();
-
-        if (users[credentials.email]) {
+        } catch {
           set({
             isLoading: false,
-            error: 'An account with this email already exists.',
+            error: 'Something went wrong. Please try again later.',
           });
-          return;
         }
-
-        const user: UserProfile = {
-          id: generateId(),
-          email: credentials.email,
-          name: credentials.name,
-          createdAt: new Date().toISOString(),
-        };
-
-        storeUser(user);
-
-        set({ user, isAuthenticated: true, isLoading: false, error: null });
       },
 
       logout: async () => {
@@ -291,19 +222,13 @@ export const useAuthStore = create<AuthStore>()(
           return;
         }
 
-        // Mock path — local name/avatar update.
-        const updated = { ...current, ...data };
-        set({ user: updated });
-
-        const users = getStoredUsers();
-        if (users[current.email]) {
-          users[current.email] = { ...users[current.email], ...data };
-          try {
-            localStorage.setItem(USERS_KEY, JSON.stringify(users));
-          } catch (error) {
-            console.warn('Failed to persist profile update:', error);
-          }
-        }
+        // A local profile is not an authenticated account and must not be
+        // presented as mutable account data.
+        set({
+          user: null,
+          isAuthenticated: false,
+          error: AUTH_UNAVAILABLE_MESSAGE,
+        });
       },
 
       clearError: () => {
@@ -336,42 +261,29 @@ export const useAuthStore = create<AuthStore>()(
           return;
         }
 
-        // Mock path.
-        await new Promise(r => setTimeout(r, 800));
-
-        const users = getStoredUsers();
-        if (!users[email]) {
-          set({
-            isLoading: false,
-            error: 'No account found with this email address.',
-          });
-          return;
-        }
-
-        set({ isLoading: false, error: null });
+        // A reset email cannot be sent without a real account backend.
+        set({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: AUTH_UNAVAILABLE_MESSAGE,
+        });
       },
     }),
     {
       name: STORAGE_KEY,
-      version: 1,
-      partialize: state => ({
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
+      version: 3,
+      partialize: () => ({
+        // Never persist a client-side session. Real sessions are reconciled
+        // against the server cookie by initSession on protected routes.
+        user: null,
+        isAuthenticated: false,
       }),
       migrate: persistedState => {
-        // v0 → v1: validate shape and guarantee no sensitive fields survive.
-        const state = persistedState as {
-          user?: unknown;
-          isAuthenticated?: unknown;
-        } | null;
-        if (!state || typeof state !== 'object') {
-          return { user: null, isAuthenticated: false };
-        }
-        const { user, isAuthenticated } = state;
-        return {
-          user: user && typeof user === 'object' ? (user as UserProfile) : null,
-          isAuthenticated: Boolean(isAuthenticated),
-        };
+        // v0/v1 records may be mock sessions with no password verification.
+        // They must never be promoted into an authenticated state.
+        void persistedState;
+        return { user: null, isAuthenticated: false };
       },
     }
   )

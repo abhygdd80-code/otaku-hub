@@ -40,7 +40,7 @@ const ROWS: CompareRow[] = [
     valueKey: p => String(p.price),
     render: p => (
       <span className="text-sm font-extrabold text-white tabular-nums">
-        {formatPrice(p.price)}
+        {formatPrice(p.price, p.currencyCode)}
       </span>
     ),
   },
@@ -268,7 +268,10 @@ export function CompareDrawer({ className }: CompareDrawerProps) {
                                       {product.name}
                                     </span>
                                     <span className="mt-0.5 block text-xs font-bold text-accent tabular-nums">
-                                      {formatPrice(product.price)}
+                                      {formatPrice(
+                                        product.price,
+                                        product.currencyCode
+                                      )}
                                     </span>
                                   </span>
                                 </Link>

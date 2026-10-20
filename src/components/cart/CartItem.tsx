@@ -7,6 +7,7 @@ import { Magnetic } from '@/components/ui/Magnetic';
 import { QuantitySelector } from '../product/QuantitySelector';
 import { motion } from 'framer-motion';
 import { useCart } from './CartContext';
+import { formatPrice } from '@/lib/utils';
 
 interface CartItemProps {
   item: {
@@ -14,6 +15,7 @@ interface CartItemProps {
     name: string;
     image: string;
     price: number;
+    currencyCode?: string;
     size: string;
     quantity: number;
     collection?: string;
@@ -77,7 +79,9 @@ export const CartItem = ({ item }: CartItemProps) => {
                 {item.color}
               </p>
             )}
-            <p className="text-zinc-400 text-sm">${item.price.toFixed(2)}</p>
+            <p className="text-zinc-400 text-sm">
+              {formatPrice(item.price, item.currencyCode)}
+            </p>
           </div>
 
           {/* Quantity Selector */}

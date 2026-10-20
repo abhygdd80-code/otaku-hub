@@ -121,9 +121,13 @@ export function Navbar() {
             <div className="flex items-center gap-0.5">
               <SearchButton />
 
-              <WishlistNavIcon />
-
-              <AccountMenu />
+              {/* Keep the high-priority search and cart actions visible at
+                  narrow widths. Wishlist and account remain available from
+                  the mobile menu below. */}
+              <div className="hidden items-center gap-0.5 md:flex">
+                <WishlistNavIcon />
+                <AccountMenu />
+              </div>
 
               <CartButton />
 
@@ -134,7 +138,7 @@ export function Navbar() {
                 className={cn(
                   'md:hidden relative flex items-center justify-center w-10 h-10 rounded-lg',
                   'text-zinc-400 hover:text-white',
-                  'transition-colors',
+                  'transition-colors motion-reduce:transition-none',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
                 )}
                 aria-label={
@@ -148,7 +152,7 @@ export function Navbar() {
                 <div className="relative w-5 h-4">
                   <span
                     className={cn(
-                      'absolute left-0 top-0 h-[2px] w-full rounded-full bg-current transition-all duration-300',
+                      'absolute left-0 top-0 h-[2px] w-full rounded-full bg-current transition-all duration-300 motion-reduce:transition-none',
                       isMobileMenuOpen
                         ? 'top-1/2 -translate-y-1/2 rotate-45'
                         : ''
@@ -156,13 +160,13 @@ export function Navbar() {
                   />
                   <span
                     className={cn(
-                      'absolute left-0 top-1/2 -translate-y-1/2 h-[2px] w-full rounded-full bg-current transition-all duration-300',
+                      'absolute left-0 top-1/2 -translate-y-1/2 h-[2px] w-full rounded-full bg-current transition-all duration-300 motion-reduce:transition-none',
                       isMobileMenuOpen ? 'opacity-0' : ''
                     )}
                   />
                   <span
                     className={cn(
-                      'absolute left-0 bottom-0 h-[2px] w-full rounded-full bg-current transition-all duration-300',
+                      'absolute left-0 bottom-0 h-[2px] w-full rounded-full bg-current transition-all duration-300 motion-reduce:transition-none',
                       isMobileMenuOpen
                         ? 'bottom-1/2 translate-y-1/2 -rotate-45'
                         : ''

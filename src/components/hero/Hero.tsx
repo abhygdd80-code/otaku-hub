@@ -164,8 +164,8 @@ export function Hero({ className }: HeroProps) {
 
   const handleMouseLeave = useCallback(() => setMousePos({ x: 0, y: 0 }), []);
 
-  const parallaxX = mousePos.x * -15;
-  const parallaxY = mousePos.y * -15;
+  const parallaxX = reducedMotion ? 0 : mousePos.x * -15;
+  const parallaxY = reducedMotion ? 0 : mousePos.y * -15;
 
   // No transform before the first mousemove keeps the server-rendered and
   // first client frame identical (avoids a hydration mismatch) and means

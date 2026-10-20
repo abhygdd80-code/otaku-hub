@@ -5,6 +5,7 @@ import { Lock } from 'lucide-react';
 import Container from '@/components/layout/Container';
 import Section from '@/components/layout/Section';
 import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
+import { isShopifyConfigured } from '@/lib/shopify/config';
 
 /**
  * Forgot password page — client component.
@@ -31,6 +32,15 @@ export function ForgotPasswordPageClient() {
               <p className="text-sm text-muted-foreground">
                 No worries — we&apos;ll send you a reset link.
               </p>
+              {!isShopifyConfigured() && (
+                <p
+                  className="rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-200"
+                  role="status"
+                >
+                  Password resets are unavailable until the real account
+                  integration is enabled.
+                </p>
+              )}
             </div>
 
             {/* Form */}

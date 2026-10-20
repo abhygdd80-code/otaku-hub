@@ -2,12 +2,17 @@
 
 import { motion } from 'framer-motion';
 import { cn } from '@/utils/cn';
+import { formatPrice } from '@/lib/utils';
 
 export interface ProductPriceProps {
-  /** Price in whole dollars */
+  /** Price in the supplied currency */
   price: number;
+  /** ISO 4217 currency code (e.g. "INR", "USD") */
+  currencyCode?: string;
   /** Optional compare-at price (strikethrough) */
   compareAtPrice?: number | null;
+  /** Compare-at price currency code */
+  compareAtCurrencyCode?: string;
   className?: string;
 }
 
@@ -17,10 +22,12 @@ export interface ProductPriceProps {
  */
 export function ProductPrice({
   price,
+  currencyCode = 'INR',
   compareAtPrice,
+  compareAtCurrencyCode,
   className,
 }: ProductPriceProps) {
-  const formatted = `$${price.toFixed(2)}`;
+  const formatted = formatPrice(price, currencyCode);
   const hasDiscount = compareAtPrice != null && compareAtPrice > price;
 
   return (
@@ -36,7 +43,7 @@ export function ProductPrice({
 
       {hasDiscount && (
         <span className="text-lg text-zinc-500 line-through decoration-zinc-600">
-          ${compareAtPrice!.toFixed(2)}
+          {formatPrice(compareAtPrice!, compareAtCurrencyCode ?? currencyCode)}
         </span>
       )}
     </motion.div>

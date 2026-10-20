@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Zap } from 'lucide-react';
+import { ArrowRight, ShoppingBag } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import { formatPrice } from '@/lib/utils';
 import { Modal } from '@/components/ui/Modal';
 import { useCart } from '@/context/CartContext';
 import { useCartDrawer } from '@/components/cart/CartDrawerContext';
@@ -32,7 +33,7 @@ import type { Product } from '@/data/products';
  * Quick View modal — a full product preview without leaving the page.
  *
  * Opens from any product card (Eye button), renders the gallery, size /
- * color / quantity selectors, add-to-cart, buy-now, wishlist, stock,
+ * color / quantity selectors, add-to-cart, view-cart, wishlist, stock,
  * shipping reassurance and a compact related-products preview.
  *
  * ── Animations ────────────────────────────────────────────
@@ -84,6 +85,7 @@ export function QuickViewModal() {
       name: product.name,
       image: getProductImage(product),
       price: product.price,
+      currencyCode: product.currencyCode,
       size: selectedSize,
       color: selectedColor,
       quantity,
@@ -101,13 +103,14 @@ export function QuickViewModal() {
     openCartDrawer,
   ]);
 
-  const handleBuyNow = useCallback(() => {
+  const handleAddAndViewCart = useCallback(() => {
     if (!product) return;
     addToCart({
       id: product.id,
       name: product.name,
       image: getProductImage(product),
       price: product.price,
+      currencyCode: product.currencyCode,
       size: selectedSize,
       color: selectedColor,
       quantity,
@@ -183,7 +186,10 @@ export function QuickViewModal() {
               data-quickview-reveal
               className="flex items-center gap-4 flex-wrap"
             >
-              <ProductPrice price={product.price} />
+              <ProductPrice
+                price={product.price}
+                currencyCode={product.currencyCode}
+              />
               {reviewSummary && (
                 <Link
                   href={product.href}
@@ -221,7 +227,9 @@ export function QuickViewModal() {
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
               </span>
               <span className="font-semibold text-emerald-400">In Stock</span>
-              <span className="text-zinc-500">— ships within 24 hours</span>
+              <span className="text-zinc-500">
+                — shipping details are confirmed at checkout
+              </span>
             </div>
 
             {/* Selectors */}
@@ -279,17 +287,17 @@ export function QuickViewModal() {
 
                 <button
                   type="button"
-                  onClick={handleBuyNow}
+                  onClick={handleAddAndViewCart}
                   className="flex w-full items-center justify-center gap-2 rounded-xl border border-accent/40 bg-accent/10 px-6 py-3.5 text-sm font-bold uppercase tracking-wider text-accent transition-all hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
-                  <Zap className="w-4 h-4" aria-hidden="true" />
-                  Buy Now
+                  <ShoppingBag className="w-4 h-4" aria-hidden="true" />
+                  Add &amp; View Cart
                 </button>
               </div>
             </div>
 
             <div data-quickview-reveal>
-              <ShippingInfo />
+              <ShippingInfo currencyCode={product.currencyCode} />
             </div>
 
             <Link
@@ -374,7 +382,7 @@ function RelatedMiniCard({ product, onSelect }: RelatedMiniCardProps) {
           {product.name}
         </span>
         <span className="block text-xs font-bold text-accent">
-          ${product.price.toFixed(2)}
+          {formatPrice(product.price, product.currencyCode)}
         </span>
       </span>
       <ArrowRight

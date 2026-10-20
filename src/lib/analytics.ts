@@ -14,6 +14,8 @@ export interface AnalyticsProduct {
   item_name: string;
   item_category?: string;
   price: number;
+  /** ISO 4217 currency code for the numeric price. */
+  currencyCode?: string;
   quantity?: number;
   /** Shopify variant GID — forwarded to Meta as content_ids. */
   item_variant?: string;
@@ -118,7 +120,7 @@ export function trackViewItem(product: AnalyticsProduct): void {
   trackEvent({
     name: 'view_item',
     properties: {
-      currency: 'USD',
+      currency: product.currencyCode ?? 'INR',
       value: product.price,
       items: [product],
     },
@@ -132,7 +134,7 @@ export function trackAddToCart(
   trackEvent({
     name: 'add_to_cart',
     properties: {
-      currency: 'USD',
+      currency: item.currencyCode ?? 'INR',
       value: totalPrice ?? item.price,
       items: [item],
     },
@@ -143,7 +145,7 @@ export function trackRemoveFromCart(item: AnalyticsProduct): void {
   trackEvent({
     name: 'remove_from_cart',
     properties: {
-      currency: 'USD',
+      currency: item.currencyCode ?? 'INR',
       value: item.price * (item.quantity ?? 1),
       items: [item],
     },
@@ -158,7 +160,7 @@ export function trackBeginCheckout(
   trackEvent({
     name: 'begin_checkout',
     properties: {
-      currency: 'USD',
+      currency: items[0]?.currencyCode ?? 'INR',
       value: totalPrice,
       ...(coupon ? { coupon } : {}),
       items,
@@ -175,7 +177,7 @@ export function trackPurchase(
   trackEvent({
     name: 'purchase',
     properties: {
-      currency: 'USD',
+      currency: items[0]?.currencyCode ?? 'INR',
       value: totalPrice,
       transaction_id: transactionId,
       ...(coupon ? { coupon } : {}),
@@ -199,7 +201,7 @@ export function trackViewItemList(
   trackEvent({
     name: 'view_item_list',
     properties: {
-      currency: 'USD',
+      currency: items[0]?.currencyCode ?? 'INR',
       item_list_name: listName,
       items,
     },

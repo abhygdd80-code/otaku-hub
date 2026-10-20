@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-const PRODUCT_HANDLE = 'neo-tokyo-oversized-tee';
+// Use first Shopify product handle from live catalog
+const PRODUCT_HANDLE = 'gear-5-anime-hoodie-white-premium-unisex-hoodie-1';
 
 test.describe('Cart drawer', () => {
   test('shows empty state initially', async ({ page }) => {
@@ -67,7 +68,7 @@ test.describe('Cart drawer', () => {
     const couponInput = page.getByLabel('Promo code');
     await couponInput.fill('SAVE10');
     await page.getByRole('button', { name: 'Apply' }).click();
-    await expect(page.getByText('applied')).toBeVisible();
+    await expect(page.getByText('applied — enjoy')).toBeVisible();
     // Discount line should appear
     await expect(page.getByText('Discount (SAVE10)')).toBeVisible();
   });
@@ -82,8 +83,11 @@ test.describe('Cart drawer', () => {
     await expect(
       page.getByRole('dialog', { name: 'Shopping cart' })
     ).toBeVisible();
-    // Shipping progress bar should render
-    await expect(page.getByText('away from free shipping')).toBeVisible();
+    // Shipping progress bar should render - product price (1099 INR) exceeds threshold (100 INR)
+    // so it shows "unlocked FREE shipping" instead of "away from free shipping"
+    await expect(
+      page.getByText(/away from free shipping|unlocked.*free shipping/i)
+    ).toBeVisible();
   });
 
   test('close button closes the drawer', async ({ page }) => {

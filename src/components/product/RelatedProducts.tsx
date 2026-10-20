@@ -111,6 +111,7 @@ export function RelatedProducts({
               name={product.name}
               category={product.category}
               price={product.price}
+              currencyCode={product.currencyCode}
               badge={product.badge}
               gradient={product.gradient}
               href={product.href}

@@ -7,7 +7,9 @@ import { Package, PackageOpen, Truck } from 'lucide-react';
 import { useAuthStore } from '@/store';
 import type { CustomerOrder } from '@/types/auth';
 import { cn } from '@/utils/cn';
+import { formatPrice } from '@/lib/utils';
 import { ROUTES } from '@/constants';
+import { isShopifyConfigured } from '@/lib/shopify/config';
 
 /**
  * Order history (client).
@@ -18,6 +20,7 @@ import { ROUTES } from '@/constants';
  */
 export function OrdersPageClient() {
   const user = useAuthStore(s => s.user);
+  const shopifyConfigured = isShopifyConfigured();
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -63,7 +66,7 @@ export function OrdersPageClient() {
           <div className="h-6 w-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
         </div>
       ) : orders.length === 0 ? (
-        <EmptyState />
+        <EmptyState shopifyConfigured={shopifyConfigured} />
       ) : (
         <ul className="space-y-4">
           {orders.map(order => (
@@ -123,7 +126,7 @@ function OrderCard({ order }: { order: CustomerOrder }) {
           <div className="flex items-center gap-4 shrink-0">
             <div className="text-right">
               <p className="font-display text-lg font-bold text-primary">
-                {order.currencyCode} {order.totalPrice.toFixed(2)}
+                {formatPrice(order.totalPrice, order.currencyCode)}
               </p>
               <p className="text-[11px] uppercase tracking-wider text-zinc-500">
                 {order.financialStatus ?? 'Paid'}
@@ -206,18 +209,21 @@ function LineItemPreviews({ items }: { items: CustomerOrder['lineItems'] }) {
 
 // ─── Empty State ───────────────────────────────────────────────
 
-function EmptyState() {
+function EmptyState({ shopifyConfigured }: { shopifyConfigured: boolean }) {
   return (
     <div className="rounded-2xl bg-surface border border-border px-6 py-16 text-center">
       <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800/60 ring-1 ring-border">
         <PackageOpen className="h-7 w-7 text-zinc-400" strokeWidth={1.6} />
       </div>
       <h2 className="font-display text-lg font-bold text-primary">
-        No orders yet
+        {shopifyConfigured
+          ? 'No orders yet'
+          : 'Order history is unavailable in this demo'}
       </h2>
       <p className="mx-auto mt-2 max-w-sm text-sm text-zinc-500">
-        When you complete a purchase it will show up here with live tracking
-        details.
+        {shopifyConfigured
+          ? 'When you complete a purchase it will show up here with live tracking details.'
+          : 'This local storefront does not create orders yet. Connect a store to enable checkout and order tracking.'}
       </p>
       <Link
         href={ROUTES.shop}

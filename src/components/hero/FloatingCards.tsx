@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { gsap } from '@/lib/gsap';
+import { formatPrice } from '@/lib/utils';
 
 export interface FloatingCardsProps {
   mouseX: number;
@@ -21,19 +22,19 @@ interface CardData {
 
 const cards: CardData[] = [
   {
-    title: '$128',
+    title: formatPrice(128, 'INR'),
     subtitle: 'Cyber Oni Hoodie',
     gradient: 'from-accent/20 to-purple-500/10',
     position: { top: '10%', left: '-15%' },
   },
   {
-    title: '$65',
+    title: formatPrice(65, 'INR'),
     subtitle: 'Ghost Shell Tee',
     gradient: 'from-blue-500/20 to-cyan-500/10',
     position: { top: '65%', left: '-12%' },
   },
   {
-    title: '$245',
+    title: formatPrice(245, 'INR'),
     subtitle: 'Valkyrie Statue',
     gradient: 'from-amber-500/20 to-red-500/10',
     position: { top: '15%', right: '-18%' },

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Product } from '@/data/products';
 import { getSearchProductImage } from '@/features/search';
+import { formatPrice } from '@/lib/utils';
 
 interface SearchResultProps {
   product: Product;
@@ -24,10 +25,7 @@ export function SearchResult({
   onSelect,
 }: SearchResultProps) {
   const imageUrl = getSearchProductImage(product);
-  const formattedPrice = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(product.price);
+  const formattedPrice = formatPrice(product.price, product.currencyCode);
 
   return (
     <Link

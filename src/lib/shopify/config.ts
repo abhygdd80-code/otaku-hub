@@ -1,14 +1,15 @@
 // ─── Shopify Configuration ─────────────────────────────────────────
 // Central feature-flag + config for the Shopify Storefront API.
 //
-// The app ships with a complete mock catalog so it is fully functional
-// out of the box. When the two public env vars below are present AND
-// non-empty, every data accessor transparently sources from the live
-// Shopify storefront instead. When either is missing, `isShopifyConfigured`
-// returns false and the app uses the local catalog (graceful fallback).
+// The app ships with a complete local catalog so it is fully functional
+// before commerce integration. Shopify is opt-in: the explicit enable flag
+// must be true as well as both connection values being present. This prevents
+// credentials left in a development environment from silently switching the
+// storefront away from local, truthful launch mode.
 //
-//   NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN          e.g. otaku-hub.myshopify.com
-//   NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN   public Storefront API token
+//   NEXT_PUBLIC_ENABLE_SHOPIFY                true to opt into integration
+//   NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN           e.g. otaku-hub.myshopify.com
+//   NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN public Storefront API token
 //
 // `NEXT_PUBLIC_*` vars are inlined at build time, so this flag is safe to
 // read from both server components and client components.
@@ -38,9 +39,12 @@ function normalizeDomain(raw: string): string {
 
 /**
  * Resolve the Shopify configuration from the environment.
- * Returns `null` (not configured) when either required value is missing.
+ * Returns `null` (not configured) unless the explicit enable flag and both
+ * required connection values are present.
  */
 export function getShopifyConfig(): ShopifyConfig | null {
+  if (process.env.NEXT_PUBLIC_ENABLE_SHOPIFY !== 'true') return null;
+
   const storeDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN?.trim();
   const storefrontAccessToken =
     process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN?.trim();

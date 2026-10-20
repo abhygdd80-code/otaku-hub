@@ -136,3 +136,36 @@
     animation: none;
   }
 }
+
+/* Hero beam animation */
+@keyframes hero-beam-move {
+  0% {
+    transform: translateX(-10%) translateY(0);
+  }
+  25% {
+    transform: translateX(60%) translateY(-30px);
+  }
+  50% {
+    transform: translateX(130%) translateY(0);
+  }
+  75% {
+    transform: translateX(60%) translateY(30px);
+  }
+  100% {
+    transform: translateX(-10%) translateY(0);
+  }
+}
+
+.hero-beam-animation {
+  animation: hero-beam-move 12s ease-in-out infinite;
+  animation-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-beam-animation {
+    animation: none;
+    /* Keep a subtle static position for reduced motion */
+    transform: translateX(10%) translateY(0);
+    opacity: 0.6;
+  }
+}

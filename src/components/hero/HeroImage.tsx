@@ -3,6 +3,7 @@
 import { useRef, useEffect } from 'react';
 import { gsap } from '@/lib/gsap';
 import { cn } from '@/utils/cn';
+import { formatPrice } from '@/lib/utils';
 import { FloatingCards } from './FloatingCards';
 
 export interface HeroImageProps {
@@ -158,7 +159,7 @@ export function HeroImage({ mouseX, mouseY, className }: HeroImageProps) {
                 </h4>
               </div>
               <span className="text-xs sm:text-sm font-extrabold text-white bg-accent/20 px-2 py-1 rounded-md border border-accent/30">
-                $128
+                {formatPrice(128, 'INR')}
               </span>
             </div>
           </div>

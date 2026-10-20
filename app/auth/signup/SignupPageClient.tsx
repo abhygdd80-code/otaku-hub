@@ -5,6 +5,7 @@ import { Sparkles } from 'lucide-react';
 import Container from '@/components/layout/Container';
 import Section from '@/components/layout/Section';
 import { SignupForm } from '@/components/auth/SignupForm';
+import { isShopifyConfigured } from '@/lib/shopify/config';
 
 /**
  * Signup page — client component with animated entrance.
@@ -35,6 +36,15 @@ export function SignupPageClient() {
               <p className="text-sm text-muted-foreground">
                 Join the community and never miss a drop.
               </p>
+              {!isShopifyConfigured() && (
+                <p
+                  className="rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-200"
+                  role="status"
+                >
+                  Account creation is unavailable until the real account
+                  integration is enabled.
+                </p>
+              )}
             </div>
 
             {/* Form */}

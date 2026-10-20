@@ -8,9 +8,8 @@ import { siteConfig } from '@/config/site';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Order Confirmed',
-  description:
-    'Your order at OtakuSaga is confirmed. Track its status and manage your purchases from your account.',
+  title: 'Checkout Status',
+  description: 'Check whether a real OtakuSaga checkout was completed.',
   alternates: {
     canonical: `${siteConfig.url}/order/confirmed`,
   },

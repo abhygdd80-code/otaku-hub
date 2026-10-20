@@ -2,9 +2,11 @@
 
 import { ShieldCheck, Truck } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import { isShopifyConfigured } from '@/lib/shopify/config';
 
 export interface ShippingInfoProps {
   className?: string;
+  currencyCode?: string;
 }
 
 /**
@@ -14,6 +16,8 @@ export interface ShippingInfoProps {
  * copy stays identical everywhere it appears.
  */
 export function ShippingInfo({ className }: ShippingInfoProps) {
+  const shopifyConfigured = isShopifyConfigured();
+
   return (
     <div
       className={cn(
@@ -26,15 +30,27 @@ export function ShippingInfo({ className }: ShippingInfoProps) {
       <div className="flex items-center gap-3 text-xs text-zinc-400">
         <Truck className="w-4 h-4 text-accent shrink-0" />
         <span>
-          Free worldwide shipping on orders over $100.{' '}
-          <span className="text-zinc-500">Express 2–4 business days.</span>
+          {shopifyConfigured
+            ? 'Shipping details are provided at checkout.'
+            : 'Shipping details will be confirmed when checkout is connected.'}{' '}
+          <span className="text-zinc-500">
+            {shopifyConfigured
+              ? 'Review the final delivery options before paying.'
+              : 'This demo does not create orders or collect payment.'}
+          </span>
         </span>
       </div>
       <div className="flex items-center gap-3 text-xs text-zinc-400">
         <ShieldCheck className="w-4 h-4 text-accent shrink-0" />
         <span>
-          Secure checkout.{' '}
-          <span className="text-zinc-500">30-day hassle-free returns.</span>
+          {shopifyConfigured
+            ? 'Checkout is handled by our store.'
+            : 'Local cart preview only.'}{' '}
+          <span className="text-zinc-500">
+            {shopifyConfigured
+              ? 'Payment is collected only after you confirm checkout.'
+              : 'Returns and payment become available with a connected store.'}
+          </span>
         </span>
       </div>
     </div>

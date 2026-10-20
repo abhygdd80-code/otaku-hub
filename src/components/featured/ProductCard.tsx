@@ -9,11 +9,13 @@ import { useCartDrawer } from '@/components/cart/CartDrawerContext';
 import { useQuickView } from '@/components/quickview/QuickViewContext';
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
 import { CompareToggle } from '@/components/compare/CompareToggle';
+import { formatPrice } from '@/lib/utils';
 
 export interface ProductCardProps {
   name: string;
   category: string;
   price: number;
+  currencyCode?: string;
   badge?: string;
   gradient: string;
   href: string;
@@ -42,6 +44,7 @@ export function ProductCard({
   name,
   category,
   price,
+  currencyCode = 'INR',
   badge,
   gradient,
   href,
@@ -52,7 +55,7 @@ export function ProductCard({
   const { addToCart } = useCart();
   const { onOpen: openCartDrawer } = useCartDrawer();
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const formattedPrice = `$${price.toFixed(2)}`;
+  const formattedPrice = formatPrice(price, currencyCode);
 
   // Gradient cards are local-catalog only (no Shopify variant) and carry no
   // image, so add with a placeholder id derived from the href.

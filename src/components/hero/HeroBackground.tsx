@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import { gsap } from '@/lib/gsap';
 
 /**
  * Background atmosphere for the Hero section.
@@ -11,22 +10,30 @@ import { gsap } from '@/lib/gsap';
 export function HeroBackground() {
   const beamRef = useRef<HTMLDivElement>(null);
 
+  // CSS animation for reduced motion support
   useEffect(() => {
     const beam = beamRef.current;
     if (!beam) return;
 
-    const ctx = gsap.context(() => {
-      gsap.to(beam, {
-        x: 60,
-        y: -30,
-        duration: 12,
-        ease: 'sine.inOut',
-        repeat: -1,
-        yoyo: true,
-      });
-    });
+    // Check for reduced motion preference
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const shouldAnimate = !mediaQuery.matches;
 
-    return () => ctx.revert();
+    if (shouldAnimate) {
+      // Apply CSS animation class
+      beam.classList.add('hero-beam-animation');
+    }
+
+    const handler = (e: MediaQueryListEvent) => {
+      if (e.matches) {
+        beam.classList.remove('hero-beam-animation');
+      } else {
+        beam.classList.add('hero-beam-animation');
+      }
+    };
+
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
   }, []);
 
   return (
@@ -49,7 +56,7 @@ export function HeroBackground() {
       {/* Moving light beam */}
       <div
         ref={beamRef}
-        className="absolute top-[20%] -left-[10%] w-[40%] h-[1px]"
+        className="absolute top-[20%] -left-[10%] w-[40%] h-[1px] hero-beam"
         style={{
           background:
             'linear-gradient(90deg, transparent 0%, rgba(229,9,20,0.15) 50%, transparent 100%)',

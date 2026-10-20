@@ -42,4 +42,40 @@ test.describe('Homepage', () => {
     // Empty cart heading
     await expect(page.getByText('Your cart is empty')).toBeVisible();
   });
+
+  test('keeps the mobile header usable at narrow widths', async ({ page }) => {
+    for (const width of [310, 320, 360, 390]) {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto('/');
+
+      const menuButton = page.getByRole('button', {
+        name: 'Open navigation menu',
+      });
+
+      await expect(
+        page.getByRole('button', { name: /Search items/i })
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /Shopping cart/i })
+      ).toBeVisible();
+      await expect(menuButton).toBeVisible();
+
+      const menuButtonBox = await menuButton.boundingBox();
+      expect(menuButtonBox).not.toBeNull();
+      expect(menuButtonBox!.x + menuButtonBox!.width).toBeLessThanOrEqual(
+        width
+      );
+
+      await menuButton.focus();
+      await page.keyboard.press('Enter');
+      const menu = page.getByRole('dialog', { name: 'Navigation menu' });
+      await expect(menu).toBeVisible();
+      await expect(menu.getByRole('link', { name: 'Wishlist' })).toBeVisible();
+      await expect(menu.getByRole('link', { name: 'Sign in' })).toBeVisible();
+
+      await page.keyboard.press('Escape');
+      await expect(menu).not.toBeVisible();
+      await expect(menuButton).toBeFocused();
+    }
+  });
 });

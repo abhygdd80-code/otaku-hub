@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Tag, Check, X } from 'lucide-react';
+import { Tag, Check, X, Info } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useCartDrawer } from './CartDrawerContext';
 import { cn } from '@/utils/cn';
@@ -15,13 +15,15 @@ import { trackBeginCheckout, type AnalyticsProduct } from '@/lib/analytics';
 import { isShopifyConfigured } from '@/lib/shopify/config';
 import { getCheckoutUrl, fetchShopifyCart } from '@/lib/shopify/cart';
 import { setPendingPurchase } from '@/lib/checkout';
+import { formatPrice } from '@/lib/utils';
 
 /**
  * Cart summary panel showing subtotal, shipping, tax, and total.
  *
  * Includes a promo-code field (SAVE10 / WELCOME15 / ANIME20) with
  * inline validation, a success flash, and a removable discount line.
- * Checkout is simulated with a toast loader.
+ * When Shopify is not configured this remains a local/demo cart: no payment
+ * is collected and no order is created.
  */
 export function CartSummary() {
   const { cart, subtotal } = useCart();
@@ -38,6 +40,8 @@ export function CartSummary() {
     ? computeCouponDiscount(appliedCode, subtotal)
     : 0;
   const discountedSubtotal = subtotal - discount;
+  const currencyCode = cart[0]?.currencyCode ?? 'INR';
+  const shopifyConfigured = isShopifyConfigured();
 
   if (cart.length === 0) return null;
 
@@ -80,54 +84,53 @@ export function CartSummary() {
   };
 
   const handleCheckout = async () => {
+    if (!shopifyConfigured) {
+      toast.info('Checkout is not available in this demo.', {
+        id: 'checkout',
+        description:
+          'Your cart is saved locally. Connect a store to enable payment and order creation.',
+      });
+      return;
+    }
+
     // ── Analytics: begin_checkout ────────────────────────────
     const analyticsItems: AnalyticsProduct[] = cart.map(item => ({
       item_id: item.id,
       item_name: item.name,
       item_category: item.collection,
       price: item.price,
+      currencyCode: item.currencyCode,
       quantity: item.quantity,
     }));
     trackBeginCheckout(analyticsItems, total, appliedCode ?? undefined);
 
-    // ── Shopify configured: redirect to the hosted checkout ──
-    if (isShopifyConfigured()) {
-      // Persist a snapshot of what the customer is buying so the
-      // confirmation page can replay the purchase event accurately.
-      setPendingPurchase({
-        items: analyticsItems,
-        total,
-        currency: 'USD',
-        coupon: appliedCode ?? undefined,
-        createdAt: new Date().toISOString(),
-      });
+    // Persist a snapshot of what the customer is buying so the confirmation
+    // page can replay the purchase event accurately after hosted checkout.
+    setPendingPurchase({
+      items: analyticsItems,
+      total,
+      currency: currencyCode,
+      coupon: appliedCode ?? undefined,
+      createdAt: new Date().toISOString(),
+    });
 
-      let checkoutUrl = getCheckoutUrl();
-      if (!checkoutUrl) {
-        // No persisted URL for this session — refresh the cart once to
-        // obtain the canonical checkout link.
-        const shopifyCart = await fetchShopifyCart();
-        checkoutUrl = shopifyCart?.checkoutUrl ?? null;
-      }
+    let checkoutUrl = getCheckoutUrl();
+    if (!checkoutUrl) {
+      // No persisted URL for this session — refresh the cart once to
+      // obtain the canonical checkout link.
+      const shopifyCart = await fetchShopifyCart();
+      checkoutUrl = shopifyCart?.checkoutUrl ?? null;
+    }
 
-      if (!checkoutUrl) {
-        toast.error('Unable to open checkout. Please try again.');
-        return;
-      }
-
-      // Ask Shopify to return the customer to our confirmation page.
-      const returnUrl = `${window.location.origin}${ROUTES.orderConfirmed}`;
-      const separator = checkoutUrl.includes('?') ? '&' : '?';
-      window.location.href = `${checkoutUrl}${separator}return_to=${encodeURIComponent(returnUrl)}`;
+    if (!checkoutUrl) {
+      toast.error('Unable to open checkout. Please try again.');
       return;
     }
 
-    // ── Shopify NOT configured: no fake success — explain ────
-    toast.info('Shopify checkout is not configured.', {
-      id: 'checkout',
-      description:
-        'Connect a Shopify store to enable real checkout for this storefront.',
-    });
+    // Ask Shopify to return the customer to our confirmation page.
+    const returnUrl = `${window.location.origin}${ROUTES.orderConfirmed}`;
+    const separator = checkoutUrl.includes('?') ? '&' : '?';
+    window.location.href = `${checkoutUrl}${separator}return_to=${encodeURIComponent(returnUrl)}`;
   };
 
   const handleContinue = () => {
@@ -241,11 +244,30 @@ export function CartSummary() {
         </AnimatePresence>
       </div>
 
+      {!shopifyConfigured && (
+        <div
+          role="status"
+          className="flex gap-3 rounded-xl border border-accent/20 bg-accent/5 p-3.5 text-xs text-zinc-300"
+        >
+          <Info
+            className="mt-0.5 h-4 w-4 shrink-0 text-accent"
+            aria-hidden="true"
+          />
+          <p className="leading-relaxed">
+            <span className="font-semibold text-white">Demo cart only.</span>{' '}
+            Items stay in this browser. No payment is taken and no order is
+            created until checkout is connected.
+          </p>
+        </div>
+      )}
+
       {/* ── Line items ─────────────────────────────────────── */}
       <div className="space-y-2 text-sm">
         <div className="flex items-center justify-between text-zinc-400">
           <span>Subtotal</span>
-          <span className="text-white">${subtotal.toFixed(2)}</span>
+          <span className="text-white">
+            {formatPrice(subtotal, currencyCode)}
+          </span>
         </div>
 
         {appliedCode && (
@@ -268,20 +290,20 @@ export function CartSummary() {
               </button>
             </span>
             <span className="font-semibold text-success">
-              -${discount.toFixed(2)}
+              -{formatPrice(discount, currencyCode)}
             </span>
           </motion.div>
         )}
 
         <div className="flex items-center justify-between text-zinc-400">
-          <span>Shipping</span>
+          <span>{shopifyConfigured ? 'Shipping' : 'Estimated shipping'}</span>
           <span className="text-white">
-            {shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}
+            {shipping === 0 ? 'Free' : formatPrice(shipping, currencyCode)}
           </span>
         </div>
         <div className="flex items-center justify-between text-zinc-400">
           <span>Estimated Tax</span>
-          <span className="text-white">${tax.toFixed(2)}</span>
+          <span className="text-white">{formatPrice(tax, currencyCode)}</span>
         </div>
       </div>
 
@@ -289,14 +311,24 @@ export function CartSummary() {
       <div className="flex items-center justify-between border-t border-border/60 pt-4">
         <span className="text-base font-bold text-white">Total</span>
         <span className="text-xl font-extrabold text-white">
-          ${total.toFixed(2)}
+          {formatPrice(total, currencyCode)}
         </span>
       </div>
 
       {/* Free shipping threshold */}
       {shipping > 0 && (
         <p className="text-center text-[11px] text-zinc-500">
-          Free shipping on orders over $100
+          {shopifyConfigured
+            ? 'Free shipping on orders over'
+            : 'Demo free-shipping threshold:'}{' '}
+          {formatPrice(100, currencyCode)}
+        </p>
+      )}
+
+      {!shopifyConfigured && (
+        <p className="text-center text-[11px] leading-relaxed text-zinc-500">
+          Prices, shipping, tax, and discounts are previews until checkout is
+          connected.
         </p>
       )}
 
@@ -305,16 +337,23 @@ export function CartSummary() {
         <button
           type="button"
           onClick={handleCheckout}
+          disabled={!shopifyConfigured}
+          title={
+            shopifyConfigured
+              ? 'Proceed to checkout'
+              : 'Checkout is unavailable until a store is connected'
+          }
           className={cn(
             'w-full rounded-xl px-6 py-3.5',
             'bg-accent text-sm font-bold uppercase tracking-wider text-white',
             'transition-all duration-300',
             'hover:shadow-[0_0_30px_rgba(229,9,20,0.4)]',
             'hover:-translate-y-0.5 active:translate-y-0',
+            'disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background'
           )}
         >
-          Proceed to Checkout
+          {shopifyConfigured ? 'Proceed to Checkout' : 'Checkout Unavailable'}
         </button>
         <button
           type="button"

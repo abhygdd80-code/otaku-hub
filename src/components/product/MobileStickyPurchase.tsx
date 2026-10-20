@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { cn } from '@/utils/cn';
+import { formatPrice } from '@/lib/utils';
+import { Z_INDEX } from '@/constants';
 import { AddToCartButton } from './AddToCartButton';
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
 
@@ -11,8 +13,10 @@ export interface MobileStickyPurchaseProps {
   productName: string;
   /** Product handle used by the wishlist toggle */
   productHandle: string;
-  /** Price in whole dollars */
+  /** Price in the supplied currency */
   price: number;
+  /** ISO 4217 currency code for the price */
+  currencyCode?: string;
   /** Optional compare-at price (strikethrough) */
   compareAtPrice?: number | null;
   /** Called when add-to-cart is pressed (reuses the main panel handler) */
@@ -47,34 +51,39 @@ export function MobileStickyPurchase({
   productName,
   productHandle,
   price,
+  currencyCode = 'INR',
   compareAtPrice,
   onAddToCart,
   disabled = false,
   targetRef,
 }: MobileStickyPurchaseProps) {
   const [visible, setVisible] = useState(false);
-
-  // Track whether the user has actually scrolled down the page. This
-  // guards against flashing the bar on short viewports where the
-  // purchase block starts below the fold on first paint.
-  const scrolledDown = useRef(false);
+  const barRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     const target = targetRef.current;
     if (!target) return;
 
-    let lastY = window.scrollY;
-    const onScroll = () => {
-      if (window.scrollY > lastY + 4) scrolledDown.current = true;
-      lastY = window.scrollY;
+    const updateVisibility = (nextVisible: boolean) => {
+      // Do not leave keyboard users focused on a control that is about to be
+      // removed when they scroll back to the primary purchase block.
+      if (!nextVisible && barRef.current?.contains(document.activeElement)) {
+        const replacement = target.querySelector<HTMLElement>(
+          'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+        );
+        replacement?.focus();
+      }
+
+      setVisible(nextVisible);
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // Show only once the block has left the viewport and the page
-        // has been scrolled down at all.
-        setVisible(scrolledDown.current && !entry.isIntersecting);
+        // Keep the bar hidden on the initial page load when the purchase
+        // block starts below the fold. A non-zero scroll position is enough
+        // to distinguish that state without a second scroll listener.
+        updateVisibility(window.scrollY > 0 && !entry.isIntersecting);
       },
       // Shrink the bottom of the observation window so the bar appears
       // just before the block fully exits — no dead zone mid-scroll.
@@ -83,7 +92,6 @@ export function MobileStickyPurchase({
     observer.observe(target);
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
       observer.disconnect();
     };
   }, [targetRef]);
@@ -92,14 +100,27 @@ export function MobileStickyPurchase({
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={{ y: 96 }}
+          ref={barRef}
+          role="region"
+          aria-label="Sticky purchase options"
+          initial={prefersReducedMotion ? false : { y: 96 }}
           animate={{ y: 0 }}
-          exit={{ y: 96 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
+          exit={prefersReducedMotion ? undefined : { y: 96 }}
+          transition={
+            prefersReducedMotion
+              ? { duration: 0 }
+              : { duration: 0.3, ease: 'easeOut' }
+          }
+          style={{
+            // Keep page content below the bar, while leaving the navbar and
+            // drawer/modal layers free to cover it when they are open.
+            zIndex: Z_INDEX.navbar - 1,
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.75rem)',
+          }}
           className={cn(
-            'fixed inset-x-0 bottom-0 z-40 lg:hidden',
+            'fixed inset-x-0 bottom-0 lg:hidden',
             'border-t border-white/[0.08] bg-background/85 backdrop-blur-xl',
-            'pt-2.5 pb-[max(env(safe-area-inset-bottom),0.75rem)]'
+            'pt-2.5'
           )}
         >
           <div className="mx-auto flex max-w-7xl items-center gap-3 px-4">
@@ -110,11 +131,11 @@ export function MobileStickyPurchase({
               </p>
               <p className="flex items-baseline gap-2">
                 <span className="font-display text-lg font-extrabold text-white tabular-nums">
-                  ${price.toFixed(2)}
+                  {formatPrice(price, currencyCode)}
                 </span>
                 {compareAtPrice != null && compareAtPrice > price && (
                   <span className="text-xs text-zinc-500 line-through">
-                    ${compareAtPrice.toFixed(2)}
+                    {formatPrice(compareAtPrice, currencyCode)}
                   </span>
                 )}
               </p>

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { cn } from '@/utils/cn';
 import type { Product } from '@/data/products';
+import { formatPrice } from '@/lib/utils';
 
 export interface RecentlyViewedCardProps {
   product: Product;
@@ -17,6 +18,7 @@ export function RecentlyViewedCard({
   product,
   className,
 }: RecentlyViewedCardProps) {
+  const formattedPrice = formatPrice(product.price, product.currencyCode);
   return (
     <Link
       href={product.href}
@@ -27,7 +29,7 @@ export function RecentlyViewedCard({
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         className
       )}
-      aria-label={`${product.name} — $${product.price.toFixed(2)}`}
+      aria-label={`${product.name} — ${formattedPrice}`}
     >
       {/* Gradient thumbnail */}
       <span
@@ -46,7 +48,7 @@ export function RecentlyViewedCard({
           {product.name}
         </span>
         <span className="mt-1 block text-sm font-bold text-zinc-300">
-          ${product.price.toFixed(2)}
+          {formattedPrice}
         </span>
       </span>
     </Link>

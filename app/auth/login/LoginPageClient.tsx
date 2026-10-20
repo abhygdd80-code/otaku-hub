@@ -5,6 +5,7 @@ import { Sparkles } from 'lucide-react';
 import Container from '@/components/layout/Container';
 import Section from '@/components/layout/Section';
 import { LoginForm } from '@/components/auth/LoginForm';
+import { isShopifyConfigured } from '@/lib/shopify/config';
 
 /**
  * Login page — client component with animated entrance.
@@ -35,6 +36,15 @@ export function LoginPageClient() {
               <p className="text-sm text-muted-foreground">
                 Access your wishlist, orders, and saved preferences.
               </p>
+              {!isShopifyConfigured() && (
+                <p
+                  className="rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-200"
+                  role="status"
+                >
+                  Sign-in is unavailable until the real account integration is
+                  enabled.
+                </p>
+              )}
             </div>
 
             {/* Form */}

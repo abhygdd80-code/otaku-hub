@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import { Hero } from '@/components/hero';
 import { CategoryShowcase, type CategoryItem } from '@/components/categories';
 import { FeaturedCollection } from '@/components/featured';
@@ -6,9 +7,15 @@ import { BrandStory } from '@/components/brand';
 import { BestSellers } from '@/components/bestsellers';
 import { RecentlyViewed } from '@/components/recently-viewed';
 import { Newsletter } from '@/components/newsletter';
-import { InstagramGallery } from '@/components/instagram';
 import { getCategoryProducts } from '@/features/collections';
 import { siteConfig } from '@/config/site';
+
+// The community gallery is below the fold and self-contained. Keep its
+// animated client code out of the homepage's initial client chunk while
+// retaining server rendering for the initial HTML.
+const InstagramGallery = dynamic(() =>
+  import('@/components/instagram').then(module => module.InstagramGallery)
+);
 
 const HOME_URL = siteConfig.url;
 const OG_IMAGE = `${siteConfig.url}${siteConfig.ogImage}`;

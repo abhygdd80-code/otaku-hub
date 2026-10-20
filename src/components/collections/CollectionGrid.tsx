@@ -58,6 +58,8 @@ export function CollectionGrid({ products }: CollectionGridProps) {
             name={product.name}
             collection={product.collection}
             price={product.price}
+            currencyCode={product.currencyCode}
+            href={product.id ? `/product/${product.id}` : undefined}
             badge={product.badge}
             rating={product.id ? getReviewSummary(product.id) : null}
           />

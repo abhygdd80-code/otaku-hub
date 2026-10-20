@@ -34,6 +34,7 @@ export function WishlistGrid({ products }: WishlistGridProps) {
             name={product.name}
             collection={product.collection}
             price={product.price}
+            currencyCode={product.currencyCode}
             badge={product.badge}
             rating={product.id ? getReviewSummary(product.id) : null}
           />

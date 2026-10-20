@@ -20,10 +20,14 @@ export interface ProductVariant {
   title: string;
   /** Whether the variant is currently purchasable */
   availableForSale: boolean;
-  /** Variant price in dollars */
+  /** Variant price in the product's currency */
   price: number;
+  /** ISO 4217 currency code (e.g. "INR", "USD") */
+  currencyCode: string;
   /** Compare-at (strikethrough) price, if any */
   compareAtPrice: number | null;
+  /** Compare-at price currency code */
+  compareAtCurrencyCode?: string;
   /** The option selections that identify this variant */
   selectedOptions: { name: string; value: string }[];
 }
@@ -40,8 +44,10 @@ export interface Product {
   category: string;
   /** Full product description for PDP */
   description: string;
-  /** Price in whole dollars */
+  /** Price in the product's currency */
   price: number;
+  /** ISO 4217 currency code (e.g. "INR", "USD") */
+  currencyCode: string;
   /** Optional badge text (e.g. "BESTSELLER", "LIMITED") */
   badge?: string;
   /** Primary gradient class for card placeholders */
@@ -90,6 +96,7 @@ export const PRODUCTS: Product[] = [
     description:
       'Step into the void with the Shadow Realm Hoodie. Crafted from 420GSM heavyweight combed ring-spun cotton, this drop-shoulder pullover features an oversized fit, double-lined hood, and ribbed cuffs. The front minimal print glows under blacklight — a subtle nod to the dark energies that linger between worlds.',
     price: 89,
+    currencyCode: 'INR',
     badge: 'BESTSELLER',
     gradient:
       'bg-gradient-to-br from-accent/25 via-purple-800/40 to-background',
@@ -135,6 +142,7 @@ export const PRODUCTS: Product[] = [
     description:
       'Channel the electric pulse of the city that never sleeps. This 280GSM heavyweight vintage-washed cotton tee features a boxy oversized fit, dropped shoulders, and a ribbed collar. The neon-gradient screen print arcs across the chest like a streak of light through rain-slicked streets.',
     price: 49,
+    currencyCode: 'INR',
     badge: 'TRENDING',
     gradient:
       'bg-gradient-to-br from-cyan-800/35 via-blue-900/30 to-background',
@@ -175,6 +183,7 @@ export const PRODUCTS: Product[] = [
     description:
       'A masterwork of modern anime craftsmanship. This 1/6 scale hand-painted collector figure depicts the Spirit Guardian mid-ceremony, with translucent resin aura effects and an LED-illuminated base. Each piece is individually numbered — limited to 500 units worldwide.',
     price: 79,
+    currencyCode: 'INR',
     badge: 'LIMITED',
     gradient:
       'bg-gradient-to-br from-amber-700/35 via-red-900/40 to-background',
@@ -216,6 +225,7 @@ export const PRODUCTS: Product[] = [
     description:
       'Defy the storm with the Crimson Wave. This full-length automatic umbrella features a fiberglass-reinforced windproof frame, a 42-inch arc canopy with a custom crimson-to-black gradient print, and a laser-etched tempered steel handle. Rain becomes a backdrop for your aesthetic.',
     price: 39,
+    currencyCode: 'INR',
     badge: 'HOT DROP',
     gradient: 'bg-gradient-to-br from-accent/30 via-rose-800/35 to-background',
     href: '/product/crimson-wave-umbrella',
@@ -253,6 +263,7 @@ export const PRODUCTS: Product[] = [
     description:
       'Bold meets brutalist. This 420GSM heavyweight hoodie features a boxy oversized cut, double-lined hood, and a neon Cyber Oni front print that glows under UV. The ribbed hem and cuffs lock in heat while the drop-shoulder silhouette keeps it street-ready.',
     price: 128,
+    currencyCode: 'INR',
     badge: 'HOT DROP',
     gradient:
       'bg-gradient-to-br from-accent/25 via-purple-800/40 to-background',
@@ -287,6 +298,7 @@ export const PRODUCTS: Product[] = [
     description:
       'A ghost in the machine — this 280GSM oversized tee features a distressed cybernetic back print with cracked-glass details. Heavyweight cotton with a boxy silhouette, dropped shoulders, and a pre-shrunk ribbed collar.',
     price: 65,
+    currencyCode: 'INR',
     badge: 'BESTSELLER',
     gradient:
       'bg-gradient-to-br from-cyan-800/35 via-blue-900/30 to-background',
@@ -321,6 +333,7 @@ export const PRODUCTS: Product[] = [
     description:
       'A masterwork of modern anime craftsmanship. This 1/6 scale hand-painted collector figure features translucent LED-lit wings and a shattered-star base. Each piece is individually numbered — limited to 500 units worldwide.',
     price: 245,
+    currencyCode: 'INR',
     badge: 'LIMITED 500',
     gradient:
       'bg-gradient-to-br from-amber-700/35 via-red-900/40 to-background',
@@ -352,6 +365,7 @@ export const PRODUCTS: Product[] = [
     description:
       "A masterless warrior's companion. This full-length automatic umbrella features a fiberglass-reinforced windproof frame, a 42-inch arc canopy with a katana-slice gradient print, and a laser-etched steel handle shaped like a tsuba guard.",
     price: 85,
+    currencyCode: 'INR',
     badge: 'RESTOCKED',
     gradient:
       'bg-gradient-to-br from-zinc-600/40 via-stone-800/35 to-background',
@@ -383,6 +397,7 @@ export const PRODUCTS: Product[] = [
     description:
       'Built for the electric nights of the mega-city. This lightweight bomber jacket uses water-resistant Japanese nylon with reflective piping that catches every neon glow. The oversized zip-off hood and hidden pocket system make it as functional as it is futuristic.',
     price: 198,
+    currencyCode: 'INR',
     badge: 'NEW DROP',
     gradient: 'bg-gradient-to-br from-accent/20 via-rose-900/50 to-background',
     href: '/product/neo-tokyo-jacket',

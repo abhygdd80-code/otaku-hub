@@ -22,6 +22,7 @@ function toCardProps(p: Product) {
     name: p.name,
     category: p.category,
     price: p.price,
+    currencyCode: p.currencyCode,
     badge: p.badge,
     gradient: p.gradient,
     href: p.href,
@@ -57,7 +58,7 @@ export function FeaturedCollection({ className }: FeaturedCollectionProps) {
 
   const smallProducts = useMemo(
     () =>
-      catalog
+      [...catalog]
         .sort(
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

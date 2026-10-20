@@ -19,6 +19,7 @@ export function ProfilePageClient() {
   const user = useAuthStore(s => s.user);
   const updateProfile = useAuthStore(s => s.updateProfile);
   const logout = useAuthStore(s => s.logout);
+  const clearError = useAuthStore(s => s.clearError);
   const router = useRouter();
 
   const [name, setName] = useState(user?.name ?? '');
@@ -31,8 +32,13 @@ export function ProfilePageClient() {
       return;
     }
     setSaving(true);
+    clearError();
     await updateProfile({ name: name.trim() });
     setSaving(false);
+    if (useAuthStore.getState().error) {
+      toast.error(useAuthStore.getState().error ?? 'Unable to update profile.');
+      return;
+    }
     toast.success('Profile updated');
   };
 

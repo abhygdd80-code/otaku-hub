@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { ShoppingBag, Eye } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
 import { useCart } from '@/components/cart/CartContext';
 import { useCartDrawer } from '@/components/cart/CartDrawerContext';
 import { useQuickView } from '@/components/quickview/QuickViewContext';
@@ -16,6 +18,9 @@ export type ProductCardProps = {
   name: string;
   collection: string;
   price: number;
+  currencyCode?: string;
+  /** Optional product detail route. Collection cards provide this link. */
+  href?: string;
   badge?: string;
   /** Aggregate review summary — renders star rating + count when present. */
   rating?: { average: number; total: number } | null;
@@ -27,6 +32,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   name,
   collection,
   price,
+  currencyCode = 'INR',
+  href,
   badge = 'Limited Drop',
   rating = null,
 }) => {
@@ -63,6 +70,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       name,
       image,
       price,
+      currencyCode,
       size: 'L',
       color: 'Black',
     });
@@ -78,6 +86,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         transform: `perspective(1000px) rotateX(${rotate.x}deg) rotateY(${rotate.y}deg)`,
       }}
     >
+      {href && (
+        <Link
+          href={href}
+          className="absolute inset-0 z-20 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          aria-label={`View ${name} product details`}
+        >
+          <span className="sr-only">View {name} product details</span>
+        </Link>
+      )}
+
       {/* Image Container with Zoom */}
       <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-background">
         <Image
@@ -97,7 +115,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* Hover Quick Action Buttons Overlay — also revealed when any
             button receives keyboard focus so controls are never hidden. */}
-        <div className="absolute inset-0 bg-background/40 backdrop-blur-xs opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+        <div className="absolute inset-0 z-30 bg-background/40 backdrop-blur-xs opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
           <button
             type="button"
             onClick={handleAddToCart}
@@ -148,12 +166,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         <div className="mt-3 flex items-center justify-between">
           <span className="text-lg font-extrabold text-white">
-            ${price.toFixed(2)}
+            {formatPrice(price, currencyCode)}
           </span>
           <button
             type="button"
             onClick={handleAddToCart}
-            className="text-xs font-semibold uppercase tracking-wider text-secondary-text hover:text-accent transition-colors flex items-center gap-1"
+            className="relative z-30 text-xs font-semibold uppercase tracking-wider text-secondary-text hover:text-accent transition-colors flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded"
           >
             Add +
           </button>

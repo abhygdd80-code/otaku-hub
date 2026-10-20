@@ -51,10 +51,11 @@ export function getNewestProducts(limit?: number): Product[] {
 // ─── Recommended Products ────────────────────────────────────
 
 /**
- * Price window (in dollars) inside which a product is considered
+ * Price window (in INR) inside which a product is considered
  * "similarly priced" for recommendation purposes.
+ * Equivalent to roughly ₹2,500 for the local INR catalog.
  */
-const PRICE_MATCH_BAND = 25;
+const PRICE_MATCH_BAND = 2500;
 
 /**
  * Score products as recommendations for the given product.
@@ -62,7 +63,7 @@ const PRICE_MATCH_BAND = 25;
  * ── Scoring rubric ────────────────────────────────────────
  * • Same category            — strong signal (+100)
  * • Shared tags              — +12 per overlapping tag
- * • Similar price (±$25)     — +10
+ * • Similar price (±₹2,500)  — +10
  * • Bestseller tag           — +6 (boosts fallback picks)
  * • New tag                  — +4 (fresher inventory)
  *

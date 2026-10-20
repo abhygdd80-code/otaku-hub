@@ -115,7 +115,7 @@ export default async function ProductDetailPage({ params }: Props) {
       '@type': 'Offer',
       url: `${siteConfig.url}/product/${product.handle}`,
       price: product.price,
-      priceCurrency: 'USD',
+      priceCurrency: product.currencyCode,
       availability: 'https://schema.org/InStock',
     },
     ...(reviewSummary

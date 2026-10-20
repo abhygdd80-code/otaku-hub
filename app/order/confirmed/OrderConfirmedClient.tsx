@@ -7,6 +7,7 @@ import { cn } from '@/utils/cn';
 import { useCart } from '@/context/CartContext';
 import { useAuthStore } from '@/store';
 import { trackPurchase } from '@/lib/analytics';
+import { formatPrice } from '@/lib/utils';
 import {
   clearPendingPurchase,
   getPendingPurchase,
@@ -14,15 +15,17 @@ import {
 } from '@/lib/checkout';
 import { createOrderConfirmedEntrance } from '@/animations/gsap/order-confirmed';
 import { ROUTES } from '@/constants';
+import { isShopifyConfigured } from '@/lib/shopify/config';
 
 /**
  * Post-checkout thank-you page (client).
  *
  * On mount it:
- *  1. Reads the pending-purchase snapshot saved before the Shopify redirect.
- *  2. Fires the `purchase` analytics event with the real order id.
- *  3. Clears the snapshot + the local cart (the order now lives on Shopify).
- *  4. Runs the GSAP staggered entrance.
+ *  1. Requires a connected checkout and a return reference.
+ *  2. Reads the pending-purchase snapshot saved before the Shopify redirect.
+ *  3. Fires the `purchase` analytics event with the checkout reference.
+ *  4. Clears the snapshot + the local cart after a real checkout return.
+ *  5. Runs the GSAP staggered entrance.
  *
  * Direct visits without a snapshot render a graceful "no order" state.
  */
@@ -33,6 +36,8 @@ export function OrderConfirmedClient() {
     searchParams.get('order_id') ??
     searchParams.get('checkout_token') ??
     searchParams.get('id');
+  const shopifyConfigured = isShopifyConfigured();
+  const hasRealCheckoutReturn = shopifyConfigured && Boolean(orderId);
   const { clearCart } = useCart();
   const user = useAuthStore(s => s.user);
 
@@ -44,13 +49,20 @@ export function OrderConfirmedClient() {
   useEffect(() => {
     const snapshot = getPendingPurchase();
 
+    if (!hasRealCheckoutReturn) {
+      // A local/demo visit must never turn a stale snapshot into a success
+      // state. Keep the cart intact so browsing can continue.
+      if (!shopifyConfigured) clearPendingPurchase();
+      setPurchase(null);
+      return;
+    }
+
     if (snapshot && !firedRef.current) {
       firedRef.current = true;
-      const transactionId = orderId ?? `OH-${Date.now()}`;
       trackPurchase(
         snapshot.items,
         snapshot.total,
-        transactionId,
+        orderId as string,
         snapshot.coupon
       );
       clearPendingPurchase();
@@ -58,7 +70,7 @@ export function OrderConfirmedClient() {
     }
 
     setPurchase(snapshot);
-  }, [orderId, clearCart]);
+  }, [orderId, clearCart, hasRealCheckoutReturn]);
 
   // ── Entrance animation ───────────────────────────────────────────
   useEffect(() => {
@@ -126,7 +138,7 @@ export function OrderConfirmedClient() {
                   Total paid
                 </p>
                 <p className="mt-1 font-display text-sm font-semibold text-foreground">
-                  {purchase.currency} ${purchase.total.toFixed(2)}
+                  {formatPrice(purchase.total, purchase.currency)}
                 </p>
               </div>
             </div>
@@ -162,7 +174,10 @@ export function OrderConfirmedClient() {
                       </p>
                     </div>
                     <p className="shrink-0 text-sm font-semibold text-foreground">
-                      ${((item.price ?? 0) * (item.quantity ?? 1)).toFixed(2)}
+                      {formatPrice(
+                        (item.price ?? 0) * (item.quantity ?? 1),
+                        item.currencyCode ?? purchase.currency
+                      )}
                     </p>
                   </li>
                 ))}
@@ -216,16 +231,18 @@ export function OrderConfirmedClient() {
               data-confirm-reveal
               className="font-display text-3xl font-bold leading-tight text-foreground sm:text-4xl"
             >
-              No recent order found
+              {shopifyConfigured
+                ? 'No recent order found'
+                : "Checkout isn't available in this demo"}
             </h1>
 
             <p
               data-confirm-reveal
               className="mx-auto mt-4 max-w-md text-base leading-relaxed text-muted-foreground"
             >
-              This page is reached right after a checkout. If you were sent here
-              from an order email, your order details are available in your
-              account.
+              {shopifyConfigured
+                ? 'This page is reached right after a checkout. If you were sent here from an order email, your order details are available in your account.'
+                : 'Your cart is local-only right now. Connect a store to enable payment, order creation, and confirmation tracking.'}
             </p>
 
             <div data-confirm-reveal className="mt-8">

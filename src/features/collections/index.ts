@@ -32,11 +32,33 @@ export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 // ─── Price Range Definitions ───────────────────────────────────
 
+import { formatPrice } from '@/lib/utils';
+
 export const PRICE_RANGES = [
-  { value: 'under-50', label: 'Under $50', min: 0, max: 50 },
-  { value: '50-100', label: '$50 — $100', min: 50, max: 100 },
-  { value: '100-200', label: '$100 — $200', min: 100, max: 200 },
-  { value: 'over-200', label: 'Over $200', min: 200, max: Infinity },
+  {
+    value: 'under-4000',
+    label: `Under ${formatPrice(4000, 'INR')}`,
+    min: 0,
+    max: 4000,
+  },
+  {
+    value: '4000-8000',
+    label: `${formatPrice(4000, 'INR')} — ${formatPrice(8000, 'INR')}`,
+    min: 4000,
+    max: 8000,
+  },
+  {
+    value: '8000-16000',
+    label: `${formatPrice(8000, 'INR')} — ${formatPrice(16000, 'INR')}`,
+    min: 8000,
+    max: 16000,
+  },
+  {
+    value: 'over-16000',
+    label: `Over ${formatPrice(16000, 'INR')}`,
+    min: 16000,
+    max: Infinity,
+  },
 ] as const;
 
 // ─── Image Mapping ──────────────────────────────────────────────
@@ -66,10 +88,12 @@ export function getProductImage(product: Product): string {
 export function toProductCardProps(product: Product): ProductCardProps {
   return {
     id: product.handle,
+    href: product.href,
     image: getProductImage(product),
     name: product.name,
     collection: product.category,
     price: product.price,
+    currencyCode: product.currencyCode,
     badge: product.badge,
   };
 }

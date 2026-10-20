@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Truck } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { formatPrice } from '@/lib/utils';
+import { isShopifyConfigured } from '@/lib/shopify/config';
 import { useCart } from './CartContext';
 
 /** Orders at or above this subtotal ship free. */
@@ -19,13 +20,15 @@ export const FREE_SHIPPING_THRESHOLD = 100;
  * Renders nothing when the cart is empty.
  */
 export function ShippingProgress() {
-  const { subtotal } = useCart();
+  const { cart, subtotal } = useCart();
 
   if (subtotal === 0) return null;
 
   const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const percent = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
   const unlocked = remaining === 0;
+  const currencyCode = cart[0]?.currencyCode ?? 'INR';
+  const shopifyConfigured = isShopifyConfigured();
 
   return (
     <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
@@ -50,14 +53,27 @@ export function ShippingProgress() {
         >
           {unlocked ? (
             <>
-              You&rsquo;ve unlocked <span className="text-success">FREE</span>{' '}
-              shipping!
+              {shopifyConfigured ? (
+                <>
+                  You&rsquo;ve unlocked{' '}
+                  <span className="text-success">FREE</span> shipping!
+                </>
+              ) : (
+                <>
+                  Demo preview: the <span className="text-success">FREE</span>{' '}
+                  shipping threshold is reached.
+                </>
+              )}
             </>
           ) : (
             <>
-              You&rsquo;re{' '}
-              <span className="text-accent">{formatPrice(remaining)}</span> away
-              from free shipping
+              {shopifyConfigured ? "You're " : 'Demo preview: '}
+              <span className="text-accent">
+                {formatPrice(remaining, currencyCode)}
+              </span>{' '}
+              {shopifyConfigured
+                ? 'away from free shipping'
+                : 'from the free-shipping threshold'}
             </>
           )}
         </motion.p>
@@ -68,7 +84,11 @@ export function ShippingProgress() {
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(percent)}
-        aria-label="Progress toward free shipping"
+        aria-label={
+          shopifyConfigured
+            ? 'Progress toward free shipping'
+            : 'Demo progress toward the free-shipping threshold'
+        }
         className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.06]"
       >
         <motion.div

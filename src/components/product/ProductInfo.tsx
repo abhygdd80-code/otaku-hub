@@ -20,6 +20,7 @@ import { QuantitySelector } from './QuantitySelector';
 import { AddToCartButton } from './AddToCartButton';
 import { MobileStickyPurchase } from './MobileStickyPurchase';
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
+import { isShopifyConfigured } from '@/lib/shopify/config';
 
 export interface ProductInfoProps {
   product: Product;
@@ -49,6 +50,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
   const { addToCart } = useCart();
   const { onOpen } = useCartDrawer();
   const { openSizeGuide } = useSizeGuide();
+  const shopifyConfigured = isShopifyConfigured();
   const actionsRef = useRef<HTMLDivElement>(null);
   const [selectedSize, setSelectedSize] = useState(product.sizes[0] ?? '');
   const [selectedColor, setSelectedColor] = useState(
@@ -69,6 +71,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
       item_name: product.name,
       item_category: product.category,
       price: product.price,
+      currencyCode: product.currencyCode,
       item_variant: undefined,
     };
     trackViewItem(item);
@@ -80,6 +83,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
       name: product.name,
       image: getProductImage(product),
       price: product.price,
+      currencyCode: product.currencyCode,
       size: selectedSize,
       color: selectedColor,
       quantity,
@@ -101,7 +105,10 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.7, ease: 'easeOut' as const }}
-      className={cn('space-y-6 pb-24 lg:pb-0', className)}
+      className={cn(
+        'space-y-6 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:pb-0',
+        className
+      )}
     >
       {/* ── Badge ──────────────────────────────────────── */}
       <motion.div {...fadeUp(STAGGER_MAP.badge)}>
@@ -126,7 +133,10 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
 
       {/* ── Price ────────────────────────────────────────── */}
       <motion.div {...fadeUp(STAGGER_MAP.price)}>
-        <ProductPrice price={product.price} />
+        <ProductPrice
+          price={product.price}
+          currencyCode={product.currencyCode}
+        />
       </motion.div>
 
       {/* ── Description ──────────────────────────────────── */}
@@ -203,15 +213,27 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
         <div className="flex items-center gap-3 text-xs text-zinc-400">
           <Truck className="w-4 h-4 text-accent shrink-0" />
           <span>
-            Free worldwide shipping on orders over $100.{' '}
-            <span className="text-zinc-500">Express 2–4 business days.</span>
+            {shopifyConfigured
+              ? 'Shipping details are provided at checkout.'
+              : 'Shipping details will be confirmed when checkout is connected.'}{' '}
+            <span className="text-zinc-500">
+              {shopifyConfigured
+                ? 'Review the final delivery options before paying.'
+                : 'This demo does not create orders or collect payment.'}
+            </span>
           </span>
         </div>
         <div className="flex items-center gap-3 text-xs text-zinc-400">
           <ShieldCheck className="w-4 h-4 text-accent shrink-0" />
           <span>
-            Secure checkout.{' '}
-            <span className="text-zinc-500">30-day hassle-free returns.</span>
+            {shopifyConfigured
+              ? 'Checkout is handled by our store.'
+              : 'Local cart preview only.'}{' '}
+            <span className="text-zinc-500">
+              {shopifyConfigured
+                ? 'Payment is collected only after you confirm checkout.'
+                : 'Returns and payment become available with a connected store.'}
+            </span>
           </span>
         </div>
       </motion.div>
@@ -221,6 +243,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
         productName={product.name}
         productHandle={product.handle}
         price={product.price}
+        currencyCode={product.currencyCode}
         onAddToCart={handleAddToCart}
         disabled={outOfStock}
         targetRef={actionsRef}

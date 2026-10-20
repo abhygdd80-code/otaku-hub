@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ShoppingBag, Sparkles } from 'lucide-react';
 import { useCartDrawer } from './CartDrawerContext';
 import { cn } from '@/utils/cn';
+import { formatPrice } from '@/lib/utils';
 
 interface EmptyCartProps {
   onContinue: () => void;
@@ -14,19 +15,19 @@ const GRADIENT_PLACEHOLDERS = [
     gradient: 'from-rose-900/40 via-purple-900/30 to-background',
     name: 'Shadow Realm Hoodie',
     category: 'Premium Hoodie',
-    price: '$98',
+    price: 98,
   },
   {
     gradient: 'from-accent/20 via-orange-900/30 to-background',
     name: 'Neo Tokyo Oversized Tee',
     category: 'Graphic Tee',
-    price: '$68',
+    price: 68,
   },
   {
     gradient: 'from-indigo-900/40 via-violet-900/30 to-background',
     name: 'Spirit Guardian Figure',
     category: 'Collector Figure',
-    price: '$248',
+    price: 248,
   },
 ] as const;
 
@@ -114,7 +115,7 @@ export function EmptyCart({ onContinue }: EmptyCartProps) {
               <p className="text-[11px] text-zinc-500">{item.category}</p>
             </div>
             <span className="text-sm font-bold text-zinc-300">
-              {item.price}
+              {formatPrice(item.price, 'INR')}
             </span>
           </motion.div>
         ))}

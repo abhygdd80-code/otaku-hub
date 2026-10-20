@@ -29,6 +29,8 @@ export interface CartItem {
   name: string;
   image: string;
   price: number;
+  /** ISO 4217 currency code for the numeric price. */
+  currencyCode?: string;
   size: string;
   quantity: number;
   collection?: string;
@@ -167,6 +169,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           item_name: item.name,
           item_category: item.collection,
           price: item.price,
+          currencyCode: item.currencyCode,
           quantity,
         },
         item.price * quantity
@@ -262,6 +265,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             item_name: removedItem.name,
             item_category: removedItem.collection,
             price: removedItem.price,
+            currencyCode: removedItem.currencyCode,
             quantity: removedItem.quantity,
           });
         }

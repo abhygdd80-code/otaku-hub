@@ -28,6 +28,7 @@ export function SettingsPageClient() {
   const updateProfile = useAuthStore(s => s.updateProfile);
   const requestPasswordReset = useAuthStore(s => s.requestPasswordReset);
   const isLoading = useAuthStore(s => s.isLoading);
+  const clearError = useAuthStore(s => s.clearError);
 
   const shopifyBacked = isShopifyConfigured();
 
@@ -43,13 +44,16 @@ export function SettingsPageClient() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    clearError();
     try {
       await updateProfile({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         phone: phone.trim() || undefined,
       });
-      toast.success('Settings saved');
+      const error = useAuthStore.getState().error;
+      if (error) toast.error(error);
+      else toast.success('Settings saved');
     } finally {
       setSaving(false);
     }
@@ -57,8 +61,11 @@ export function SettingsPageClient() {
 
   const handleResetPassword = async () => {
     if (!user?.email) return;
+    clearError();
     await requestPasswordReset(user.email);
-    toast.success('Password reset link sent to your email');
+    const error = useAuthStore.getState().error;
+    if (error) toast.error(error);
+    else toast.success('Password reset link sent to your email');
   };
 
   return (
@@ -142,8 +149,8 @@ export function SettingsPageClient() {
           </button>
           {!shopifyBacked && (
             <p className="mt-3 text-xs text-zinc-600">
-              Demo mode: resetting will be delivered once Shopify checkout is
-              configured.
+              Password resets are unavailable until the real account integration
+              is enabled.
             </p>
           )}
         </div>

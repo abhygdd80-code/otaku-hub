@@ -114,6 +114,7 @@ export function mapShopifyProduct(product: ShopifyProduct): Product {
     undefined;
 
   const price = parseFloat(product.priceRange.minVariantPrice.amount);
+  const currencyCode = product.priceRange.minVariantPrice.currencyCode;
 
   return {
     id: product.id,
@@ -122,6 +123,7 @@ export function mapShopifyProduct(product: ShopifyProduct): Product {
     category: product.productType || 'Collectible',
     description: product.description,
     price,
+    currencyCode,
     badge: deriveBadge(product.tags),
     gradient: gradientForPrice(price),
     href: `/product/${product.handle}`,
@@ -138,9 +140,13 @@ export function mapShopifyProduct(product: ShopifyProduct): Product {
       title: edge.node.title,
       availableForSale: edge.node.availableForSale,
       price: parseFloat(edge.node.price.amount),
+      currencyCode: edge.node.price.currencyCode,
       compareAtPrice: edge.node.compareAtPrice
         ? parseFloat(edge.node.compareAtPrice.amount)
         : null,
+      compareAtCurrencyCode: edge.node.compareAtPrice
+        ? edge.node.compareAtPrice.currencyCode
+        : undefined,
       selectedOptions: edge.node.selectedOptions,
     })),
   };
@@ -179,6 +185,9 @@ export function mapPredictiveProduct(
   const price = product.priceRange
     ? parseFloat(product.priceRange.minVariantPrice.amount)
     : 0;
+  const currencyCode = product.priceRange
+    ? product.priceRange.minVariantPrice.currencyCode
+    : 'INR';
   const imageUrl = product.featuredImage?.url;
 
   const images: ProductImage[] = imageUrl
@@ -198,6 +207,7 @@ export function mapPredictiveProduct(
     category: product.productType || 'Collectible',
     description: product.description ?? '',
     price,
+    currencyCode,
     gradient: gradientForPrice(price),
     href: `/product/${product.handle}`,
     image: imageUrl,

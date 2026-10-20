@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Truck, Sparkles, CalendarDays, Crown } from 'lucide-react';
 import { useAnnouncementStore } from '@/store';
+import { formatPrice } from '@/lib/utils';
+import { isShopifyConfigured } from '@/lib/shopify/config';
 
 /**
  * Fixed height of the announcement bar in pixels. The Navbar offsets
@@ -18,7 +20,7 @@ export const ANNOUNCEMENT_HEIGHT = 36;
 const MESSAGES = [
   {
     icon: Truck,
-    text: 'Free shipping on orders over $100',
+    text: `Free shipping on orders over ${formatPrice(100, 'INR')}`,
   },
   {
     icon: Sparkles,
@@ -57,6 +59,17 @@ const ROTATION_MS = 4000;
 export function AnnouncementBar() {
   const isDismissed = useAnnouncementStore(s => s.isDismissed);
   const dismiss = useAnnouncementStore(s => s.dismiss);
+  const shopifyConfigured = isShopifyConfigured();
+  const messages = shopifyConfigured
+    ? MESSAGES
+    : MESSAGES.map((message, messageIndex) =>
+        messageIndex === 0
+          ? {
+              ...message,
+              text: `Demo shipping preview over ${formatPrice(100, 'INR')}`,
+            }
+          : message
+      );
   const [index, setIndex] = useState(0);
   // Reduced-motion users see a single static message (see doc comment).
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -74,15 +87,15 @@ export function AnnouncementBar() {
   useEffect(() => {
     if (isDismissed || reducedMotion) return;
     const id = setInterval(
-      () => setIndex(i => (i + 1) % MESSAGES.length),
+      () => setIndex(i => (i + 1) % messages.length),
       ROTATION_MS
     );
     return () => clearInterval(id);
-  }, [isDismissed, reducedMotion]);
+  }, [isDismissed, reducedMotion, messages.length]);
 
   if (isDismissed) return null;
 
-  const { icon: Icon, text } = MESSAGES[index];
+  const { icon: Icon, text } = messages[index % messages.length];
 
   return (
     <div
