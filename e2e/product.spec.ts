@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-const TEST_PRODUCT = 'gear-5-anime-hoodie-white-premium-unisex-hoodie-1';
+// Use a local catalog product handle (shadow-realm-hoodie, price: ₹89)
+const TEST_PRODUCT = 'shadow-realm-hoodie';
 
 test.describe('Product page', () => {
   test('loads and shows product details', async ({ page }) => {

@@ -45,7 +45,7 @@ export function CartSummary() {
 
   if (cart.length === 0) return null;
 
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 12;
+  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 100;
   const tax = discountedSubtotal * 0.08;
   const total = discountedSubtotal + shipping + tax;
 
@@ -321,7 +321,7 @@ export function CartSummary() {
           {shopifyConfigured
             ? 'Free shipping on orders over'
             : 'Demo free-shipping threshold:'}{' '}
-          {formatPrice(100, currencyCode)}
+          {formatPrice(1000, currencyCode)}
         </p>
       )}
 

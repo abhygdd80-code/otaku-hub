@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-// Use first Shopify product handle from live catalog
-const PRODUCT_HANDLE = 'gear-5-anime-hoodie-white-premium-unisex-hoodie-1';
+// Use a local catalog product handle (shadow-realm-hoodie, price: ₹89)
+const PRODUCT_HANDLE = 'shadow-realm-hoodie';
 
 test.describe('Cart drawer', () => {
   test('shows empty state initially', async ({ page }) => {
@@ -83,10 +83,10 @@ test.describe('Cart drawer', () => {
     await expect(
       page.getByRole('dialog', { name: 'Shopping cart' })
     ).toBeVisible();
-    // Shipping progress bar should render - product price (1099 INR) exceeds threshold (100 INR)
-    // so it shows "unlocked FREE shipping" instead of "away from free shipping"
+    // Shipping progress bar should render - product price (₹89) is below threshold (₹1000)
+    // In demo mode it shows "Demo preview: ₹911 from the free-shipping threshold"
     await expect(
-      page.getByText(/away from free shipping|unlocked.*free shipping/i)
+      page.getByText(/from the free-shipping threshold/i)
     ).toBeVisible();
   });
 

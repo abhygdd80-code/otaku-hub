@@ -8,7 +8,7 @@ import { isShopifyConfigured } from '@/lib/shopify/config';
 import { useCart } from './CartContext';
 
 /** Orders at or above this subtotal ship free. */
-export const FREE_SHIPPING_THRESHOLD = 100;
+export const FREE_SHIPPING_THRESHOLD = 1000;
 
 /**
  * Animated free-shipping progress bar shown inside the cart drawer.

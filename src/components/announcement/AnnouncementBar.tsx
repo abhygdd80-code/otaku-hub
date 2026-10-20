@@ -20,7 +20,7 @@ export const ANNOUNCEMENT_HEIGHT = 36;
 const MESSAGES = [
   {
     icon: Truck,
-    text: `Free shipping on orders over ${formatPrice(100, 'INR')}`,
+    text: `Free shipping on orders over ${formatPrice(1000, 'INR')}`,
   },
   {
     icon: Sparkles,
@@ -66,7 +66,7 @@ export function AnnouncementBar() {
         messageIndex === 0
           ? {
               ...message,
-              text: `Demo shipping preview over ${formatPrice(100, 'INR')}`,
+              text: `Demo shipping preview over ${formatPrice(1000, 'INR')}`,
             }
           : message
       );
